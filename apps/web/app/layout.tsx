@@ -1,0 +1,112 @@
+'use client';
+
+import '@/styles/globals.css';
+import { Inter } from 'next/font/google';
+import { useEffect, useState } from 'react';
+import { LayoutGrid, X } from 'lucide-react';
+import { Button } from '@heroui/react';
+
+import { Providers } from './providers';
+
+import { SideNav } from '@/components/sidebar/SideNav';
+import { useAuthStore } from '@/stores/useAuthStore';
+
+const inter = Inter({ subsets: ['latin'] });
+
+// 元数据将由 metadata.ts 文件提供，不需要在这里定义
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { getUser } = useAuthStore();
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    // 只有当点击的是遮罩层时才关闭侧边栏
+    if (e.target === e.currentTarget) {
+      setIsSidebarOpen(false);
+    }
+  };
+
+  // Check if the current route is an auth route
+  const isAuthPage =
+    typeof window !== 'undefined' &&
+    window.location.pathname.startsWith('/auth');
+
+  useEffect(() => {
+    getUser();
+  }, []);
+
+  if (isAuthPage) {
+    return (
+      <html suppressHydrationWarning lang="en">
+        <body className={inter.className}>
+          <Providers>{children}</Providers>
+        </body>
+      </html>
+    );
+  }
+
+  return (
+    <html suppressHydrationWarning lang="zh-CN">
+      <body className={inter.className}>
+        <Providers>
+          <div className="min-h-screen">
+            {/* Mobile Header */}
+            <div className="lg:hidden flex items-center justify-between p-4 border-b border-divider sticky top-0 bg-background z-50">
+              <Button
+                isIconOnly
+                variant="light"
+                onClick={() => setIsSidebarOpen(true)}
+              >
+                <LayoutGrid />
+              </Button>
+              <h1 className="text-xl font-bold">Twitter Clone</h1>
+              <div className="w-10" /> {/* Spacer */}
+            </div>
+
+            {/* Mobile Sidebar */}
+            <div
+              aria-modal="true"
+              className={`fixed inset-0 z-50 lg:hidden ${
+                isSidebarOpen ? 'block' : 'hidden'
+              }`}
+              role="dialog"
+              onClick={handleOverlayClick}
+            >
+              <div
+                aria-label="Close sidebar"
+                className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+                role="button"
+                tabIndex={-1}
+                onClick={handleOverlayClick}
+              />
+              <div className="absolute inset-y-0 left-0 w-72 bg-background border-r border-divider/10 flex flex-col justify-between">
+                <div className="flex justify-end p-4">
+                  <Button
+                    isIconOnly
+                    variant="light"
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    <X />
+                  </Button>
+                </div>
+                <SideNav onItemClick={() => setIsSidebarOpen(false)} />
+              </div>
+            </div>
+
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:block fixed top-0 left-0 h-screen w-72 border-r border-divider/10">
+              <SideNav />
+            </div>
+
+            {/* Main Content */}
+            <main className="lg:ml-72">{children}</main>
+          </div>
+        </Providers>
+      </body>
+    </html>
+  );
+}

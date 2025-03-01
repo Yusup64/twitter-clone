@@ -1,0 +1,7 @@
+{
+  "version": "0.0.0",
+  "name": "database",
+  "main": "index.ts",
+  "types": "./**/.ts",
+  "private": true
+}

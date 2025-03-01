@@ -1,0 +1,72 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "globalDependencies": ["**/.env.*local"],
+  "globalEnv": [
+    "DATABASE_URL",
+    "API_BASE_URL",
+    "NEXT_PUBLIC_API_BASE_URL",
+    "JWT_ACCESS_SECRET",
+    "JWT_REFRESH_SECRET"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [
+        "apps/web/.next/**",
+        "!apps/web/.next/cache/**",
+        "apps/backend/dist/**"
+      ]
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "inputs": ["**/*.ts", "**/*.tsx", ".eslintrc.json"]
+    },
+    "format": {
+      "dependsOn": ["^format"],
+      "inputs": ["**/*.ts", "**/*.tsx", "**/*.md"]
+    },
+    "web#format": {
+      "inputs": ["apps/web/**"]
+    },
+    "backend#format": {
+      "inputs": ["apps/backend/**"]
+    },
+    "dev": {
+      "dependsOn": ["web#dev", "backend#dev"]
+    },
+    "web#dev": {
+      "inputs": ["apps/web/**"],
+      "outputs": []
+    },
+    "backend#dev": {
+      "inputs": ["apps/backend/**"],
+      "outputs": [],
+      "cache": true
+    },
+    "start:prod": {
+      "dependsOn": ["backend#start:prod"]
+    },
+    "web#start:prod": {
+      "inputs": ["apps/web/**"],
+      "outputs": []
+    },
+    "backend#start:prod": {
+      "inputs": ["apps/backend/**"],
+      "outputs": []
+    },
+    "db:generate": {
+      "inputs": ["apps/backend/**"],
+      "cache": false
+    },
+    "db:push": {
+      "outputs": [],
+      "inputs": ["apps/backend/**"],
+      "cache": false
+    },
+    "db:migrate": {
+      "inputs": ["apps/backend/**"]
+    }
+  }
+}

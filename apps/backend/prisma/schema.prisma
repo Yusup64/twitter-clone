@@ -1,0 +1,313 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+generator typescriptInterfaces {
+  provider = "prisma-generator-typescript-interfaces"
+  output   = "../../../../packages/database/types/index.ts"
+}
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  password     String
+  displayName  String?
+  bio          String?  @db.Text
+  profilePhoto String?
+  coverPhoto   String?
+  location     String?
+  website      String?
+  verified     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  tweets            Tweet[]
+  likes             Like[]
+  retweets          Retweet[]
+  bookmarks         Bookmark[]
+  polls             Poll[]
+  pollVotes         PollVote[]
+  comments          Comment[]
+  followers         Follow[]       @relation("Following")
+  following         Follow[]       @relation("Followers")
+  receivedNotifications Notification[] @relation("ReceivedNotifications")
+  sentNotifications Notification[] @relation("SentNotifications")
+  sentMessages      Message[]      @relation("SentMessages")
+  receivedMessages  Message[]      @relation("ReceivedMessages")
+
+  // Security and management
+  passwordResetTokens PasswordResetToken[]
+  loginHistory        LoginHistory[]
+  userActionLogs      UserActionLog[]
+
+  // Messages & Conversations
+  conversations1   Conversation[] @relation("UserOneConversations")
+  conversations2   Conversation[] @relation("UserTwoConversations")
+
+  @@map("users")
+}
+
+model Tweet {
+  id        String   @id @default(cuid())
+  content   String?  @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaUrls String[] // Array of media URLs (images, videos)
+  hasMedia  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Tweet can be a reply to another tweet
+  parentId String?
+  parent   Tweet?  @relation("replies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies  Tweet[] @relation("replies")
+
+  // Relationships
+  likes     Like[]
+  retweets  Retweet[]
+  bookmarks Bookmark[]
+  poll      Poll?
+  comments  Comment[]
+  hashtags  HashtagTweet[]
+
+  // Notifications
+  notifications Notification[]
+
+  @@map("tweets")
+}
+
+model Poll {
+  id        String       @id @default(cuid())
+  question  String       @db.Text
+  options   PollOption[]
+  votes     PollVote[]
+  expiresAt DateTime?
+  createdAt DateTime     @default(now())
+
+  // Relationship with Tweet and User
+  tweetId String @unique
+  tweet   Tweet  @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("polls")
+}
+
+model PollOption {
+  id     String     @id @default(cuid())
+  text   String     @db.Text
+  pollId String
+  poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes  PollVote[]
+
+  @@map("poll_options")
+}
+
+model PollVote {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pollId    String
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  optionId  String
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@unique([userId, pollId])
+  @@map("poll_votes")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweetId   String
+  tweet     Tweet    @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tweetId])
+  @@map("likes")
+}
+
+model Retweet {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweetId   String
+  tweet     Tweet    @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tweetId])
+  @@map("retweets")
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweetId   String
+  tweet     Tweet    @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tweetId])
+  @@map("bookmarks")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweetId   String
+  tweet     Tweet    @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Notifications
+  notifications Notification[]
+
+  @@map("comments")
+}
+
+model Hashtag {
+  id        String         @id @default(cuid())
+  name      String         @unique
+  tweets    HashtagTweet[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("hashtags")
+}
+
+model HashtagTweet {
+  id        String   @id @default(cuid())
+  hashtagId String
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  tweetId   String
+  tweet     Tweet    @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([hashtagId, tweetId])
+  @@map("hashtag_tweets")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  type       NotificationType
+  read       Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  
+  // 关系
+  receiver   User             @relation("ReceivedNotifications", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverId String
+  sender     User             @relation("SentNotifications", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId   String
+  
+  // 添加 tweet 和 comment 关系
+  tweet      Tweet?           @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  tweetId    String?
+  comment    Comment?         @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId  String?
+
+  @@map("notifications")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("password_reset_tokens")
+}
+
+model LoginHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress String
+  userAgent String
+  location  String?
+  success   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("login_history")
+}
+
+model UserActionLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("user_action_logs")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  content        String
+  senderId       String
+  receiverId     String
+  conversationId String
+  read           Boolean      @default(false)
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+  receiver       User         @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  user1Id   String
+  user2Id   String
+  user1     User      @relation("UserOneConversations", fields: [user1Id], references: [id])
+  user2     User      @relation("UserTwoConversations", fields: [user2Id], references: [id])
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([user1Id, user2Id])
+}
+
+enum NotificationType {
+  LIKE
+  RETWEET
+  COMMENT
+  FOLLOW
+  MENTION
+  POLL_ENDED
+}

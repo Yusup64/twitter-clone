@@ -1,0 +1,3 @@
+packages:
+  - 'apps/*'       # 包含 apps 目录下的所有子目录
+  - 'packages/*'   # 包含 packages 目录下的所有子目录
