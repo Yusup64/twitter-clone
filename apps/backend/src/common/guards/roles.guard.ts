@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { ROLES_KEY } from '../decorators/roles.decorator';
 
 // 自定义装饰器，用于在控制器方法上标记所需的角色和权限
 export const Roles = (roles?: Role[]) => {
@@ -34,14 +35,12 @@ export class RolesGuard implements CanActivate {
     }
 
     // 获取当前方法上的角色和权限要求
-    const requiredRoles =
-      this.reflector.get<Role[]>('roles', context.getHandler()) || [];
-    const requiredPermissions =
-      this.reflector.get<Permission[]>('permissions', context.getHandler()) ||
-      [];
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
-    // 如果没有任何角色和权限要求，直接通过
-    if (requiredRoles.length === 0 && requiredPermissions.length === 0) {
+    if (!requiredRoles) {
       return true;
     }
 
@@ -55,22 +54,12 @@ export class RolesGuard implements CanActivate {
     }
 
     // 检查角色权限
-    const hasRequiredRole =
-      requiredRoles.length === 0 ||
-      requiredRoles.some((role) => (user.role & role) !== 0);
+    const hasRequiredRole = requiredRoles.some((role) =>
+      user.roles?.includes(role),
+    );
 
-    // 检查具体权限
-    const hasRequiredPermissions =
-      requiredPermissions.length === 0 ||
-      requiredPermissions.every(
-        (permission) =>
-          // 超级权限直接通过
-          (user.permissions & Permission.SUPER_ACCESS) !== 0 ||
-          (user.permissions & permission) !== 0,
-      );
-
-    // 同时满足角色和权限要求
-    if (!hasRequiredRole || !hasRequiredPermissions) {
+    // 同时满足角色要求
+    if (!hasRequiredRole) {
       throw new ForbiddenException('Forbidden');
     }
 

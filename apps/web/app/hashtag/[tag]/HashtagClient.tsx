@@ -34,7 +34,8 @@ export function HashtagClient({ tag }: HashtagClientProps) {
         page: pageNum,
         limit: 10,
       });
-      console.log("🚀 ~ fetchTweets ~ response:", response)
+
+      console.log('🚀 ~ fetchTweets ~ response:', response);
 
       if (pageNum === 1) {
         setTweets(response.tweets);
@@ -70,7 +71,7 @@ export function HashtagClient({ tag }: HashtagClientProps) {
           </div>
           <div>
             <h1 className="text-2xl font-bold">#{tag}</h1>
-            {meta && <p className="text-default-500">{meta.total} 条推文</p>}
+            {meta && <p className="text-default-500">{meta.total} tweets</p>}
           </div>
         </div>
       </div>
@@ -86,16 +87,16 @@ export function HashtagClient({ tag }: HashtagClientProps) {
           {meta && page < meta.totalPages && (
             <div className="p-4 flex justify-center">
               <Button isLoading={isLoading} variant="light" onClick={loadMore}>
-                加载更多
+                Load more
               </Button>
             </div>
           )}
         </>
       ) : (
         <div className="text-center p-8 text-default-500">
-          没有找到 #{tag} 的推文
+          No tweets found for #{tag}
         </div>
       )}
     </div>
   );
-} 
+}
