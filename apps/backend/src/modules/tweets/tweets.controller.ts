@@ -3,18 +3,20 @@ import {
   Get,
   Post,
   Body,
+  Put,
   Param,
   Delete,
-  Put,
-  Query,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { TweetsService } from './tweets.service';
 import { JwtAuthGuard } from '@/src/common/guards/jwt-auth.guard';
+import { RolesGuard } from '@/src/common/guards/roles.guard';
 import { UserAuth } from '@/src/common/decorators/user.decorator';
 import { CreateTweetDto, UpdateTweetDto, CreatePollDto } from './dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { IsPublic } from '@/src/common/decorators';
+import { IsPublic, Roles } from '@/src/common/decorators';
+import { Role } from '@/src/common/enums/role.enum';
 
 @ApiTags('tweets')
 @Controller('tweets')
@@ -135,5 +137,12 @@ export class TweetsController {
   @IsPublic()
   async getTweetsByHashtag(@Param('hashtag') hashtag: string, @Query() query) {
     return this.tweetsService.getTweetsByHashtag(hashtag, query);
+  }
+
+  @Get('cache/stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async getCacheStats() {
+    return this.tweetsService.getCacheStats();
   }
 }

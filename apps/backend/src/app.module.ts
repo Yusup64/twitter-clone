@@ -10,6 +10,7 @@ import {
 } from '@/src/common/interceptors';
 import { ErrorHandlerInterceptors } from '@/src/common/interceptors';
 import { LoggerModule } from '@/src/common/shared/logger/logger.module';
+import { RedisModule } from '@/src/common/shared/redis/redis.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController, AuthService } from '@/src/common/shared/auth';
@@ -28,6 +29,7 @@ import { SearchModule } from './modules/search/search.module';
 @Module({
   imports: [
     LoggerModule,
+    RedisModule,
     JwtModule.register({}),
     PassportModule,
     ConfigModule.forRoot({

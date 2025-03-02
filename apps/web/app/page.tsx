@@ -30,7 +30,7 @@ export default function HomePage() {
       }
       setIsLoading(true);
       const response = await getTweets({ page: pageNum, limit: 10 });
-      const newTweets = response.tweets as Tweet[];
+      const newTweets = response as unknown as Tweet[];
 
       if (pageNum === 1) {
         setTweets(newTweets);

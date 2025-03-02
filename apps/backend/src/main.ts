@@ -40,7 +40,7 @@ async function bootstrap() {
   const host = configService.get<string>('HOST', '0.0.0.0');
 
   await app.listen(port, host);
-  Logger.debug(`服务器运行在 http://${host}:${port}`);
-  Logger.debug(`Ngrok代理地址: ${process.env.API_BASE_URL || '未设置'}`);
+  Logger.debug(`Server is running at http://${host}:${port}`);
+  Logger.debug(`Ngrok proxy address: ${process.env.API_BASE_URL || 'Not set'}`);
 }
 bootstrap();
