@@ -15,6 +15,7 @@ import { ConfigService } from '@nestjs/config';
   cors: {
     origin: '*',
   },
+  namespace: '/notifications',
 })
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect

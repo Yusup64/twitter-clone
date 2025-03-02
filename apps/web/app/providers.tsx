@@ -9,7 +9,6 @@ import {
 } from 'next-themes';
 import { ToastProvider } from '@heroui/react';
 
-import { WebSocketProvider } from '@/contexts/WebSocketContext';
 import GlobalLoading from '@/components/GlobalLoading';
 import { LoadingProvider } from '@/contexts/LoadingContext';
 
@@ -32,15 +31,13 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <HeroUIProvider>
       <NextThemesProvider attribute="class" defaultTheme="light">
-        <WebSocketProvider>
-          <HeroUIProvider navigate={router.push}>
-            <ToastProvider placement="top-center" />
-            <LoadingProvider>
-              <GlobalLoading />
-              {children}
-            </LoadingProvider>
-          </HeroUIProvider>
-        </WebSocketProvider>
+        <HeroUIProvider navigate={router.push}>
+          <ToastProvider placement="top-center" />
+          <LoadingProvider>
+            <GlobalLoading />
+            {children}
+          </LoadingProvider>
+        </HeroUIProvider>
       </NextThemesProvider>
     </HeroUIProvider>
   );

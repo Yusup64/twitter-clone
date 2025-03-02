@@ -1,5 +1,10 @@
 import request from '@/libs/request';
-import { Message, Conversation, User } from '@/types/message';
+import {
+  Message,
+  Conversation,
+  User,
+  UnreadCountResponse,
+} from '@/types/message';
 
 const PREFIX = '/messages';
 
@@ -25,4 +30,16 @@ export const markAsRead = (conversationId: string) => {
 
 export const deleteMessage = (messageId: string) => {
   return request.delete<{ success: boolean }>(`${PREFIX}/${messageId}`);
+};
+
+// 获取与特定用户的未读消息
+export const getUnreadMessages = (userId: string, lastMessageId?: string) => {
+  const params = lastMessageId ? { lastMessageId } : {};
+
+  return request.get<Message[]>(`${PREFIX}/unread/${userId}`, { params });
+};
+
+// 获取所有未读消息数量
+export const getUnreadCount = () => {
+  return request.get<UnreadCountResponse>(`${PREFIX}/unread-count`);
 };

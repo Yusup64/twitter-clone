@@ -30,11 +30,17 @@ async function bootstrap() {
 
   app.enableCors({
     origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders: ['Authorization', 'Content-Type', 'Accept'],
   });
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 8080);
-  await app.listen(port);
-  Logger.debug(`Server is running on port ${port}`);
+  const host = configService.get<string>('HOST', '0.0.0.0');
+
+  await app.listen(port, host);
+  Logger.debug(`服务器运行在 http://${host}:${port}`);
+  Logger.debug(`Ngrok代理地址: ${process.env.API_BASE_URL || '未设置'}`);
 }
 bootstrap();

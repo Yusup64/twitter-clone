@@ -13,8 +13,6 @@ import { useAuthStore } from '@/stores/useAuthStore';
 
 const inter = Inter({ subsets: ['latin'] });
 
-// 元数据将由 metadata.ts 文件提供，不需要在这里定义
-
 export default function RootLayout({
   children,
 }: {
@@ -42,6 +40,12 @@ export default function RootLayout({
   if (isAuthPage) {
     return (
       <html suppressHydrationWarning lang="en">
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+          <meta name="theme-color" content="#1DA1F2" />
+          <link rel="manifest" href="/manifest.webmanifest" />
+          <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        </head>
         <body className={inter.className}>
           <Providers>{children}</Providers>
         </body>
@@ -51,6 +55,12 @@ export default function RootLayout({
 
   return (
     <html suppressHydrationWarning lang="zh-CN">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <meta name="theme-color" content="#1DA1F2" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+      </head>
       <body className={inter.className}>
         <Providers>
           <div className="min-h-screen">
@@ -68,34 +78,31 @@ export default function RootLayout({
             </div>
 
             {/* Mobile Sidebar */}
-            <div
-              aria-modal="true"
-              className={`fixed inset-0 z-50 lg:hidden ${
-                isSidebarOpen ? 'block' : 'hidden'
-              }`}
-              role="dialog"
-              onClick={handleOverlayClick}
-            >
+            {isSidebarOpen && (
               <div
-                aria-label="Close sidebar"
-                className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-                role="button"
-                tabIndex={-1}
-                onClick={handleOverlayClick}
-              />
-              <div className="absolute inset-y-0 left-0 w-72 bg-background border-r border-divider/10 flex flex-col justify-between">
-                <div className="flex justify-end p-4">
-                  <Button
-                    isIconOnly
-                    variant="light"
-                    onClick={() => setIsSidebarOpen(false)}
-                  >
-                    <X />
-                  </Button>
+                aria-modal="true"
+                className="fixed inset-0 z-50 lg:hidden"
+                role="dialog"
+              >
+                <button
+                  aria-label="Close sidebar"
+                  className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+                  onClick={() => setIsSidebarOpen(false)}
+                />
+                <div className="absolute inset-y-0 left-0 w-72 bg-background border-r border-divider/10 flex flex-col justify-between">
+                  <div className="flex justify-end p-4">
+                    <Button
+                      isIconOnly
+                      variant="light"
+                      onClick={() => setIsSidebarOpen(false)}
+                    >
+                      <X />
+                    </Button>
+                  </div>
+                  <SideNav onItemClick={() => setIsSidebarOpen(false)} />
                 </div>
-                <SideNav onItemClick={() => setIsSidebarOpen(false)} />
               </div>
-            </div>
+            )}
 
             {/* Desktop Sidebar */}
             <div className="hidden lg:block fixed top-0 left-0 h-screen w-72 border-r border-divider/10">
