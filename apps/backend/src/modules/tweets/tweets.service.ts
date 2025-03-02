@@ -110,7 +110,7 @@ export class TweetsService {
   }
 
   async findAll(query: any) {
-    const { page = 1, limit = 10 } = query;
+    const { page = 1, limit = 10, userId } = query;
     const skip = (page - 1) * limit;
 
     // 从数据库获取最新推文
@@ -119,6 +119,9 @@ export class TweetsService {
       take: Number(limit),
       orderBy: {
         createdAt: 'desc',
+      },
+      where: {
+        userId: userId,
       },
       include: {
         user: {

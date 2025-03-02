@@ -70,7 +70,7 @@ export default function ProfilePage() {
         userId: userData.id,
       })) as any;
 
-      setTweets(tweetsData.tweets || []);
+      setTweets(tweetsData || []);
     } catch (error) {
       console.error('Failed to fetch user data:', error);
     } finally {
