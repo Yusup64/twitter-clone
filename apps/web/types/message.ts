@@ -23,6 +23,8 @@ export interface Conversation {
   };
   lastMessage?: Message;
   unreadCount: number;
+  isOnline?: boolean;
+  isInChat?: boolean;
 }
 
 export interface User {
@@ -30,4 +32,13 @@ export interface User {
   username: string;
   displayName: string;
   profilePhoto: string;
+}
+
+export interface UnreadCountResponse {
+  total: number;
+  conversations: Array<{
+    conversationId: string;
+    otherUserId: string;
+    count: number;
+  }>;
 }

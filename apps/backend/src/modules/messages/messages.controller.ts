@@ -6,6 +6,7 @@ import {
   UseGuards,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { MessagesService } from './messages.service';
@@ -58,5 +59,25 @@ export class MessagesController {
   @ApiOperation({ summary: 'Delete a message' })
   async deleteMessage(@UserAuth() user, @Param('messageId') messageId: string) {
     return this.messagesService.deleteMessage(user.id, messageId);
+  }
+
+  @Get('unread/:userId')
+  @ApiOperation({ summary: 'Get unread messages with a user' })
+  getUnreadMessages(
+    @UserAuth() user,
+    @Param('userId') userId: string,
+    @Query('lastMessageId') lastMessageId?: string,
+  ) {
+    return this.messagesService.getUnreadMessages(
+      user.id,
+      userId,
+      lastMessageId,
+    );
+  }
+
+  @Get('unread-count')
+  @ApiOperation({ summary: 'Get all unread message count' })
+  getUnreadCount(@UserAuth() user) {
+    return this.messagesService.getUnreadCount(user.id);
   }
 }

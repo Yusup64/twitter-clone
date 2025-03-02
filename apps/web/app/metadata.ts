@@ -1,26 +1,28 @@
-import { Metadata, Viewport } from 'next';
+import { Metadata } from 'next';
+
+import { siteConfig } from '@/config/site';
 
 export const metadata: Metadata = {
-  title: 'Twitter Clone',
-  description: '一个功能丰富的 Twitter 克隆应用',
-  applicationName: 'Twitter Clone',
+  title: {
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.webmanifest',
+  themeColor: '#1DA1F2',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Twitter Clone',
+    title: siteConfig.name,
   },
-  formatDetection: {
-    telephone: false,
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
   },
-  manifest: '/manifest.json',
-  icons: {
-    apple: '/icons/icon-192x192.png',
-  },
-};
-
-export const viewport: Viewport = {
-  themeColor: '#1DA1F2',
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
 };

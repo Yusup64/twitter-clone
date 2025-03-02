@@ -116,11 +116,18 @@ class Request {
 
       if (internalStatusCode === 200) {
         return Promise.resolve(parsedData?.data);
+      } else if (internalStatusCode === 401) {
+        location.href = '/auth/login';
+        return Promise.reject({
+          statusCode: 401,
+          message: parsedData?.message || 'Unexpected error occurred',
+          error: parsedData?.error || 'Unknown error',
+        } as unknown as ErrorResponse);
       } else {
         return Promise.reject(parsedData as ErrorResponse);
       }
     } catch (error) {
-      throw error;
+      return Promise.reject(error);
     }
   }
 

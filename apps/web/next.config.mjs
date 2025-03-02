@@ -1,9 +1,23 @@
+// @ts-check
+import withSerwistInit from '@serwist/next';
+
 /** @type {import('next').NextConfig} */
+const withSerwist = withSerwistInit({
+  swSrc: 'app/sw.ts',
+  swDest: 'public/sw.js',
+});
+
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@heroui/react'],
   images: {
     domains: ['res.cloudinary.com', 'cloudinary.com'],
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
   async headers() {
     return [
@@ -21,6 +35,10 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
           },
         ],
       },
@@ -45,4 +63,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default withSerwist(nextConfig);

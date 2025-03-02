@@ -33,7 +33,7 @@ export default function NotificationsPage() {
       const response = (await getNotifications({
         page: pageNum,
         limit: 20,
-      })) as NotificationResponse;
+      })) as unknown as NotificationResponse;
 
       if (append && response.notifications) {
         setNotifications((prev) => [...prev, ...response.notifications]);
@@ -181,7 +181,7 @@ export default function NotificationsPage() {
           ) : (
             <>
               {notifications.length > 0 ? (
-                <div className="space-y-4">
+                <div className="flex flex-col gap-4">
                   {notifications.map((notification) => (
                     <Link
                       key={notification.id}
