@@ -59,8 +59,6 @@ export default function ProfilePage() {
     try {
       const userData = await getUserByUsername(username);
 
-      console.log('🚀 ~ fetchUserData ~ userData:', userData);
-
       setUser(userData);
 
       setIsFollowing(userData.isFollowedByMe || false);
