@@ -2,12 +2,12 @@
   "version": 2,
   "builds": [
     {
-      "src": "apps/backend/dist/main.js",
-      "use": "@vercel/node"
+      "src": "apps/web/next.config.mjs",
+      "use": "@vercel/next"
     },
     {
-      "src": "apps/web/next.config.js",
-      "use": "@vercel/next"
+      "src": "apps/backend/dist/main.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
