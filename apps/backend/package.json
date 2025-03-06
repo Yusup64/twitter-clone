@@ -19,10 +19,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "db:generate": "prisma generate --schema=/vercel/path0/apps/backend/prisma/schema.prisma",
+    "db:generate": "prisma generate",
     "db:push": "prisma db push --skip-generate",
-    "db:migrate": "prisma migrate dev",
-    "postinstall": "prisma generate --schema=/vercel/path0/apps/backend/prisma/schema.prisma"
+    "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@faker-js/faker": "^9.5.1",
