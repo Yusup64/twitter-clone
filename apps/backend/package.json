@@ -21,7 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:generate": "prisma generate --schema=/vercel/path0/apps/backend/prisma/schema.prisma",
     "db:push": "prisma db push --skip-generate",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "postinstall": "echo 'Skipping Prisma generate in postinstall phase'"
   },
   "dependencies": {
     "@faker-js/faker": "^9.5.1",
