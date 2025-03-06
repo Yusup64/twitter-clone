@@ -29,14 +29,15 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors({
-    origin: '*',
+    origin: 'https://twitter-clone-web-wqjb.vercel.app',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: ['Authorization', 'Content-Type', 'Accept'],
   });
 
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('SERVER_PORT', 8080);
+  const port =
+    process.env.SERVER_PORT || configService.get<number>('SERVER_PORT', 8080);
   const host = configService.get<string>('HOST', '0.0.0.0');
 
   await app.listen(port, host);
