@@ -51,16 +51,18 @@ export default function ProfilePage() {
     );
   }
 
-  // 如果没有用户数据但已完成认证检查，可能是发生了错误
+  // If there is no user data but authentication check is complete, it may have occurred an error
   if (!user && !isCheckingAuth) {
     return (
       <div className="w-full max-w-lg mx-auto text-center py-10">
-        <p className="text-lg">无法加载用户信息，请重新登录</p>
+        <p className="text-lg">
+          Cannot load user information, please log in again
+        </p>
         <button
           className="mt-4 px-4 py-2 bg-primary text-white rounded"
           onClick={() => router.push('/auth/login')}
         >
-          返回登录
+          Back to login
         </button>
       </div>
     );
