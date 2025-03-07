@@ -1,45 +1,48 @@
 /**
- * 用户角色
+ * User Roles
  */
 export enum Role {
-  /**普通用户（可以浏览和收藏房源）*/
+  /** Regular user (can browse and favorite listings) */
   USER = 1,
-  /** 房东（可以发布房源） */
+  /** Landlord (can publish listings) */
   LANDLORD = 2,
-  /** 中介经理（管理多个房源和用户） */
+  /** Agency Manager (manages multiple listings and users) */
   AGENCY_MANAGER = 4,
-  /** 财务管理员（管理资金和支付） */
+  /** Finance Admin (manages funds and payments) */
   FINANCE_ADMIN = 8,
-  /** 内容管理员（管理房源审核和举报） */
+  /** Content Admin (manages listing reviews and reports) */
   CONTENT_ADMIN = 16,
-  /** 超级管理员（拥有最高权限） */
+  /** Super Admin (has the highest permissions) */
   SUPER_ADMIN = 32,
 }
 
 /**
- * 用户权限
+ * User Permissions
  */
 export enum Permission {
-  /** 禁止访问 */
+  /** Forbidden access */
   FORBIDDEN = 0,
-  /** 查看房源列表 */
+  /** View listings */
   VIEW_LISTINGS = 1,
-  /** 创建房源 */
+  /** Create listings */
   CREATE_LISTINGS = 2,
-  /** 编辑房源 */
+  /** Edit listings */
   EDIT_LISTINGS = 4,
-  /** 删除房源 */
+  /** Delete listings */
   DELETE_LISTINGS = 8,
-  /** 管理用户 */
+  /** Manage users */
   MANAGE_USERS = 16,
-  /** 管理支付 */
+  /** Manage payments */
   MANAGE_PAYMENTS = 32,
-  /** 查看数据统计 */
+  /** View analytics */
   VIEW_ANALYTICS = 64,
-  /** 超级权限（覆盖所有权限） */
+  /** Super access (overrides all permissions) */
   SUPER_ACCESS = 128,
 }
 
+/**
+ * Exterior Types
+ */
 export enum ExteriorType {
   GARDEN = 1,
   BALCONY = 2,
