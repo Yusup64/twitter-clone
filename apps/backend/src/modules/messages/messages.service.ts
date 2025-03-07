@@ -11,7 +11,7 @@ export class MessagesService {
   private logger = new Logger('MessagesService');
 
   constructor(private prisma: PrismaService) {}
-/**
+  /**
    * Retrieves all conversations for a given user, including the latest message and unread count.
    */
   async getConversations(userId: string) {
@@ -69,7 +69,6 @@ export class MessagesService {
     });
   }
 
-
   /**
    * Retrieves the list of users the given user is following.
    */
@@ -97,7 +96,7 @@ export class MessagesService {
   /**
    * Retrieves messages exchanged between the given user and another user, and marks them as read.
    */
-// MESSAGE service ko kaam message forward garda userId re receiver ID lai sodhcha jun agadi gaera Id anusaar forward hunxa ID chai primary key hunxa
+  // MESSAGE service ko kaam message forward garda userId re receiver ID lai sodhcha jun agadi gaera Id anusaar forward hunxa ID chai primary key hunxa
 
   async getMessages(userId: string, otherUserId: string) {
     const messages = await this.prisma.message.findMany({
@@ -179,7 +178,7 @@ export class MessagesService {
     return message;
   }
 
- /**
+  /**
    * Marks all messages in a conversation as read by the user.
    */
   // sabi padhya napadhyeko mark bhayera agadi aaunxa
@@ -197,7 +196,7 @@ export class MessagesService {
     });
   }
 
-// message delete huxna
+  // message delete huxna
 
   async deleteMessage(userId: string, messageId: string) {
     const message = await this.prisma.message.findUnique({

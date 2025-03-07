@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -23,6 +23,8 @@ import {
   Share,
   MoreVertical,
   Trash,
+  Bookmark,
+  BookmarkCheck,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -33,22 +35,26 @@ import { PollDisplay } from './PollDisplay';
 
 import { Tweet } from '@/types/tweet';
 import { likeTweet, retweet, deleteTweet } from '@/api/tweets';
+import { addBookmark, removeBookmark, checkBookmarked } from '@/api/bookmark';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 interface TweetCardProps {
   tweet: Tweet & { comments?: any[] };
   onSuccess: () => void;
   showComments?: boolean;
+  isBookmarked?: boolean;
 }
 
 export const TweetCard: React.FC<TweetCardProps> = ({
   tweet,
   onSuccess,
   showComments = false,
+  isBookmarked = false,
 }) => {
   const router = useRouter();
   const [isLiked, setIsLiked] = useState(false);
   const [isRetweeted, setIsRetweeted] = useState(false);
+  const [bookmarked, setBookmarked] = useState(isBookmarked);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isImagePreviewOpen,
@@ -57,6 +63,26 @@ export const TweetCard: React.FC<TweetCardProps> = ({
   } = useDisclosure();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { user } = useAuthStore();
+
+  // 在组件挂载时设置初始书签状态和检查当前状态
+  useEffect(() => {
+    setBookmarked(isBookmarked);
+
+    // 只在未提供初始书签状态时才进行检查
+    if (isBookmarked === false && user) {
+      const checkIsBookmarked = async () => {
+        try {
+          const isBookmarked = await checkBookmarked(tweet.id);
+
+          setBookmarked(isBookmarked);
+        } catch (error) {
+          console.error('检查书签状态失败', error);
+        }
+      };
+
+      checkIsBookmarked();
+    }
+  }, [isBookmarked, tweet.id, user]);
 
   // 格式化推文内容，高亮标签和提及
   const formatContent = (content: string) => {
@@ -128,6 +154,38 @@ export const TweetCard: React.FC<TweetCardProps> = ({
         title: 'Share Tweet',
         text: tweet.content,
         url: `${window.location.origin}/tweet/${tweet.id}`,
+      });
+    }
+  };
+
+  const handleBookmark = async () => {
+    try {
+      if (bookmarked) {
+        await removeBookmark(tweet.id);
+        addToast({
+          title: '已移除书签',
+          description: '已从您的书签中移除此推文',
+          color: 'default',
+          timeout: 3000,
+        });
+      } else {
+        await addBookmark(tweet.id);
+        addToast({
+          title: '已添加书签',
+          description: '已将此推文添加到您的书签',
+          color: 'success',
+          timeout: 3000,
+        });
+      }
+      setBookmarked(!bookmarked);
+      onSuccess();
+    } catch (error) {
+      console.error('书签操作失败:', error);
+      addToast({
+        title: '操作失败',
+        description: '书签操作失败，请稍后重试',
+        color: 'danger',
+        timeout: 3000,
       });
     }
   };
@@ -324,6 +382,22 @@ export const TweetCard: React.FC<TweetCardProps> = ({
           >
             <MessageCircle className="w-5 h-5" />
             <span className="ml-1">{tweet._count.comments}</span>
+          </Button>
+          <Button
+            isIconOnly
+            aria-label={bookmarked ? '移除书签' : '添加书签'}
+            className={`${
+              bookmarked ? 'text-primary' : 'text-default-900/60'
+            } data-[hover]:bg-default-100`}
+            radius="full"
+            variant="light"
+            onClick={handleBookmark}
+          >
+            {bookmarked ? (
+              <BookmarkCheck className="w-5 h-5" fill="currentColor" />
+            ) : (
+              <Bookmark className="w-5 h-5" />
+            )}
           </Button>
           <Button
             isIconOnly
