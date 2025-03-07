@@ -42,7 +42,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     try {
       const response = (await loginUser(credentials)) as any;
 
-      const { accessToken, refreshToken, user } = response;
+      const { accessToken, refreshToken, user, err } = response;
+
+      if (err) {
+        throw new Error(err);
+      }
 
       // 存储 tokens 到 localStorage
       localStorage.setItem('accessToken', accessToken);
@@ -55,12 +59,12 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       const params = new URLSearchParams(window.location.search);
       const redirectUrl = params.get('redirect');
 
-      // 重定向到指定页面或首页
-      if (redirectUrl && !redirectUrl.includes('login')) {
-        window.location.href = decodeURIComponent(redirectUrl);
-      } else {
-        window.location.href = '/';
-      }
+      // 使用路由器重定向而不是window.location，防止页面完全刷新
+      // if (redirectUrl && !redirectUrl.includes('login')) {
+      //   window.location.href = decodeURIComponent(redirectUrl);
+      // } else {
+      //   window.location.href = '/';
+      // }
     } catch (error) {
       console.log('🚀 ~ login: ~ error:', error);
       set({ isLoading: false, isAuthenticated: false });
@@ -138,7 +142,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
       const token = localStorage.getItem('accessToken');
 
-      if (token) {
+      // 防止无限循环：只有当没有刷新中且有token时才刷新用户
+      if (token && !get().isLoading) {
+        // 设置isLoading为true防止重复调用
+        set({ isLoading: true });
         get().refreshUser();
       }
     }
