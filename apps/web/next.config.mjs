@@ -2,16 +2,17 @@
 import withSerwistInit from '@serwist/next';
 
 /** @type {import('next').NextConfig} */
-const withSerwist = withSerwistInit({
-  swSrc: 'app/sw.ts',
-  swDest: 'public/sw.js',
-});
-
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@heroui/react'],
   images: {
     domains: ['res.cloudinary.com', 'cloudinary.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   typescript: {
     ignoreBuildErrors: true,
@@ -29,12 +30,8 @@ const nextConfig = {
             value: 'nosniff',
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
           },
           {
             key: 'Service-Worker-Allowed',
@@ -53,14 +50,15 @@ const nextConfig = {
             key: 'Cache-Control',
             value: 'no-cache, no-store, must-revalidate',
           },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self'",
-          },
         ],
       },
     ];
   },
 };
+
+const withSerwist = withSerwistInit({
+  swSrc: 'app/sw.ts',
+  swDest: 'public/sw.js',
+});
 
 export default withSerwist(nextConfig);

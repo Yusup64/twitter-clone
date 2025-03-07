@@ -9,7 +9,7 @@ import {
   Link,
   addToast,
 } from '@heroui/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { EyeFilledIcon, EyeSlashFilledIcon } from '@/components/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -19,16 +19,30 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<any>({});
   const [submitted, setSubmitted] = useState<any>(null);
-  const { login, user } = useAuthStore();
+  const { login, user, isAuthenticated, initialize, initialized } =
+    useAuthStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
 
-  // 将useEffect放在组件顶层，符合React Hook规则
+  // 确保认证存储已初始化
   useEffect(() => {
-    // 如果用户已登录，重定向到个人资料页面
-    if (user) {
-      router.push('/user/profile');
+    if (!initialized) {
+      initialize();
     }
-  }, [user, router]);
+  }, [initialized, initialize]);
+
+  // 处理重定向逻辑
+  useEffect(() => {
+    // 只有当初始化完成且用户已认证时才进行重定向
+    if (initialized && isAuthenticated && user) {
+      if (redirectTo && redirectTo !== '/auth/login') {
+        router.push(redirectTo);
+      } else {
+        router.push('/user/profile');
+      }
+    }
+  }, [initialized, isAuthenticated, user, router, redirectTo]);
 
   const toggleVisibility = () => {
     setIsVisible((prev) => !prev);
@@ -52,19 +66,19 @@ const LoginPage = () => {
     setSubmitted(formData);
     login(formData).catch((err) => {
       addToast({
-        title: 'Login error',
-        description: err.err,
+        title: 'Login failed',
+        description: err.message || 'Please check your email and password',
         color: 'danger',
         timeout: 1500,
       });
     });
   };
 
-  // 如果用户已登录，显示加载中
-  if (user) {
+  // 如果正在加载且已认证，显示加载中
+  if (isAuthenticated && user) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p>Loading...</p>
+        <p>加载中...</p>
       </div>
     );
   }
@@ -129,7 +143,7 @@ const LoginPage = () => {
           {/* Remember Me & Forgot Password */}
           <div className="flex items-center justify-between w-full">
             <Checkbox className="text-sm" name="rememberMe">
-              Remember me
+              Remember Me
             </Checkbox>
             <Link color="primary" href="/user/forgot-password" size="sm">
               Forgot Password
@@ -138,7 +152,7 @@ const LoginPage = () => {
 
           {/* Sign In Button */}
           <Button className="w-full" color="primary" type="submit">
-            Sign In
+            Login
           </Button>
         </Form>
 
@@ -146,18 +160,11 @@ const LoginPage = () => {
 
         {/* Sign Up Link */}
         <p className="text-center text-sm">
-          Do you haven&apos;t an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link color="primary" href="/auth/register">
-            Sign Up
+            Register
           </Link>
         </p>
-
-        {/* Submitted Data */}
-        {/* {submitted && (
-          <div className="text-small text-default-500 mt-4">
-            Submitted data: <pre>{JSON.stringify(submitted, null, 2)}</pre>
-          </div>
-        )} */}
       </div>
     </div>
   );
