@@ -11,7 +11,9 @@ export class MessagesService {
   private logger = new Logger('MessagesService');
 
   constructor(private prisma: PrismaService) {}
-
+/**
+   * Retrieves all conversations for a given user, including the latest message and unread count.
+   */
   async getConversations(userId: string) {
     const conversations = await this.prisma.conversation.findMany({
       where: {
@@ -61,11 +63,16 @@ export class MessagesService {
         otherUser,
         lastMessage: conv.messages[0],
         unreadCount: conv._count.messages,
-        isOnline: false, // 移除WebSocket在线状态检查，默认为离线
-        isInChat: false, // 移除WebSocket聊天状态检查，默认为不在聊天中
+        isOnline: false, // 移除WebSocket在线状态检查，默认为离线  YO OFFLINE HO
+        isInChat: false, // 移除WebSocket聊天状态检查，默认为不在聊天中 YO ONLINE HO
       };
     });
   }
+
+
+  /**
+   * Retrieves the list of users the given user is following.
+   */
 
   async getFollowingUsers(userId: string) {
     const following = await this.prisma.follow.findMany({
@@ -86,6 +93,11 @@ export class MessagesService {
 
     return following.map((f) => f.following);
   }
+
+  /**
+   * Retrieves messages exchanged between the given user and another user, and marks them as read.
+   */
+// MESSAGE service ko kaam message forward garda userId re receiver ID lai sodhcha jun agadi gaera Id anusaar forward hunxa ID chai primary key hunxa
 
   async getMessages(userId: string, otherUserId: string) {
     const messages = await this.prisma.message.findMany({
@@ -167,6 +179,11 @@ export class MessagesService {
     return message;
   }
 
+ /**
+   * Marks all messages in a conversation as read by the user.
+   */
+  // sabi padhya napadhyeko mark bhayera agadi aaunxa
+
   async markAsRead(userId: string, conversationId: string) {
     await this.prisma.message.updateMany({
       where: {
@@ -179,6 +196,8 @@ export class MessagesService {
       },
     });
   }
+
+// message delete huxna
 
   async deleteMessage(userId: string, messageId: string) {
     const message = await this.prisma.message.findUnique({
