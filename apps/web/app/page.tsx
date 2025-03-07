@@ -17,7 +17,7 @@ import { CreateTweetInput } from '@/components/tweet/CreateTweetInput';
 
 export default function HomePage() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -40,8 +40,8 @@ export default function HomePage() {
       }
 
       setHasMore(newTweets.length === 10);
+      setIsLoading(false);
     } catch (error) {
-      console.log('🚀 ~ fetchTweets ~ error:', error);
       setIsLoading(false);
       setIsLoadingMore(false);
       setHasMore(false);
