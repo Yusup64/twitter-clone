@@ -23,4 +23,4 @@ npx pwa-asset-generator your-icon.png ./icons --icon-only --favicon
 ```
 
 3. 将生成的图标放在这个文件夹中
-4. 确保 manifest.json 中的图标路径正确指向这些图标 
+4. 确保 manifest.json 中的图标路径正确指向这些图标

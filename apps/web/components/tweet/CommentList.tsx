@@ -19,16 +19,16 @@ export const CommentList: React.FC<CommentListProps> = ({ comments }) => {
               <Link href={`/${comment.user.username}`}>
                 <Avatar
                   alt={comment.user.username}
+                  className="cursor-pointer"
                   size="sm"
                   src={comment.user.profilePhoto}
-                  className="cursor-pointer"
                 />
               </Link>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Link 
-                    href={`/${comment.user.username}`}
+                  <Link
                     className="font-semibold hover:underline"
+                    href={`/${comment.user.username}`}
                   >
                     {comment.user.displayName || comment.user.username}
                   </Link>

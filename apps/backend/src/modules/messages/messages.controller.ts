@@ -25,7 +25,7 @@ export class MessagesController {
 
   /**
    * Retrieves a list of conversations for the authenticated user.
-   * 
+   *
    * @param user - Extracted from the authenticated request.
    * @returns A list of conversations the user is involved in.
    */
@@ -37,7 +37,7 @@ export class MessagesController {
 
   /**
    * Retrieves a list of users that the authenticated user is following for messaging purposes.
-   * 
+   *
    * @param user - Extracted from the authenticated request.
    * @returns A list of followed users.
    */
@@ -49,7 +49,7 @@ export class MessagesController {
 
   /**
    * Retrieves messages exchanged between the authenticated user and a specific user.
-   * 
+   *
    * @param user - Extracted from the authenticated request.
    * @param userId - The ID of the other user in the conversation.
    * @returns A list of messages between the two users.
@@ -62,7 +62,7 @@ export class MessagesController {
 
   /**
    * Sends a message to a specific user.
-   * 
+   *
    * @param user - Extracted from the authenticated request.
    * @param userId - The recipient user's ID.
    * @param content - The content of the message being sent.
@@ -80,7 +80,7 @@ export class MessagesController {
 
   /**
    * Marks all messages in a conversation as read.
-   * 
+   *
    * @param userId - Extracted from the authenticated request.
    * @param conversationId - The ID of the conversation to mark as read.
    * @returns A success message confirming the operation.
@@ -95,7 +95,7 @@ export class MessagesController {
 
   /**
    * Deletes a specific message.
-   * 
+   *
    * @param user - Extracted from the authenticated request.
    * @param messageId - The ID of the message to delete.
    * @returns The deleted message object.
@@ -108,7 +108,7 @@ export class MessagesController {
 
   /**
    * Retrieves unread messages from a specific user.
-   * 
+   *
    * @param user - Extracted from the authenticated request.
    * @param userId - The ID of the user whose unread messages are being retrieved.
    * @param lastMessageId - (Optional) The ID of the last read message for pagination.
@@ -130,7 +130,7 @@ export class MessagesController {
 
   /**
    * Retrieves the total count of unread messages for the authenticated user.
-   * 
+   *
    * @param user - Extracted from the authenticated request.
    * @returns The number of unread messages.
    */

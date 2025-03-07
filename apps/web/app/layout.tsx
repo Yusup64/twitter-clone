@@ -41,10 +41,13 @@ export default function RootLayout({
     return (
       <html suppressHydrationWarning lang="en">
         <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-          <meta name="theme-color" content="#1DA1F2" />
-          <link rel="manifest" href="/manifest.webmanifest" />
-          <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+          <meta
+            content="width=device-width, initial-scale=1, maximum-scale=1"
+            name="viewport"
+          />
+          <meta content="#1DA1F2" name="theme-color" />
+          <link href="/manifest.webmanifest" rel="manifest" />
+          <link href="/icons/apple-touch-icon.png" rel="apple-touch-icon" />
         </head>
         <body className={inter.className}>
           <Providers>{children}</Providers>
@@ -56,10 +59,13 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning lang="zh-CN">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <meta name="theme-color" content="#1DA1F2" />
-        <link rel="manifest" href="/manifest.webmanifest" />
-        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <meta
+          content="width=device-width, initial-scale=1, maximum-scale=1"
+          name="viewport"
+        />
+        <meta content="#1DA1F2" name="theme-color" />
+        <link href="/manifest.webmanifest" rel="manifest" />
+        <link href="/icons/apple-touch-icon.png" rel="apple-touch-icon" />
       </head>
       <body className={inter.className}>
         <Providers>

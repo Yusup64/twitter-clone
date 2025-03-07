@@ -23,7 +23,7 @@ export class BookmarksController {
 
   /**
    * Retrieves all bookmarks of the authenticated user.
-   * 
+   *
    * @param userId - Extracted from the authenticated user.
    * @returns A list of bookmarked tweets.
    */
@@ -35,7 +35,7 @@ export class BookmarksController {
 
   /**
    * Adds a tweet to the user's bookmarks.
-   * 
+   *
    * @param userId - Extracted from the authenticated user.
    * @param tweetId - The ID of the tweet to be bookmarked.
    * @returns The newly created bookmark entry.
@@ -51,7 +51,7 @@ export class BookmarksController {
 
   /**
    * Removes a tweet from the user's bookmarks.
-   * 
+   *
    * @param userId - Extracted from the authenticated user.
    * @param tweetId - The ID of the tweet to be removed from bookmarks.
    * @returns The deleted bookmark entry.

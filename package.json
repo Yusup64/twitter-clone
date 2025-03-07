@@ -6,6 +6,7 @@
     "build": "dotenvx run -- turbo build",
     "dev": "dotenvx run -- turbo dev",
     "lint": "turbo lint",
+    "lint:fix": "turbo lint -- --fix",
     "start:prod": "dotenvx run -- turbo start:prod",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "db:generate": "dotenvx run -- turbo db:generate",

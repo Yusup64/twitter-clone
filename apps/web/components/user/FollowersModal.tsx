@@ -42,7 +42,9 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
   const fetchFollowers = async () => {
     setIsLoading(true);
     try {
-      const response = (await getFollowers(userId)) as FollowersResponse;
+      const response = (await getFollowers(
+        userId,
+      )) as unknown as FollowersResponse;
 
       if (response && response.followers) {
         setFollowers(response.followers);
