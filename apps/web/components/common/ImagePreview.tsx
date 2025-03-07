@@ -95,12 +95,13 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
           )}
 
           <div className="max-h-[90vh] max-w-[90vw] flex items-center justify-center">
-            {currentIsVideo ? (
+            {currentIsVideo && currentMedia ? (
               <video
                 autoPlay
                 controls
                 playsInline
                 className="max-h-[90vh] max-w-[90vw]"
+                src={currentMedia}
               >
                 <source
                   src={currentMedia}

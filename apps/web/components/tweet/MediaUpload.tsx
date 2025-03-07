@@ -68,8 +68,11 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
             key={index}
             className={`relative rounded-xl overflow-hidden ${getItemClass(files.length, index)}`}
           >
-            {isVideo(file) ? (
-              <video className="w-full h-full object-cover">
+            {isVideo(file) && getFilePreview(file) ? (
+              <video
+                className="w-full h-full object-cover"
+                src={getFilePreview(file)}
+              >
                 <source src={getFilePreview(file)} type={file.type} />
                 <track kind="captions" label="中文" src="" />
               </video>

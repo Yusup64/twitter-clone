@@ -8,6 +8,15 @@ import {
   updateUserProfile,
 } from '@/api/user';
 
+// 安全获取localStorage
+const getLocalStorage = () => {
+  if (typeof window !== 'undefined') {
+    return window.localStorage;
+  }
+
+  return null;
+};
+
 // 添加初始化时从本地存储恢复状态的功能
 const getInitialState = () => {
   if (typeof window === 'undefined') {
@@ -18,7 +27,8 @@ const getInitialState = () => {
     };
   }
 
-  const token = localStorage.getItem('accessToken');
+  const storage = getLocalStorage();
+  const token = storage?.getItem('accessToken');
 
   return {
     user: null,
@@ -52,9 +62,18 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   set: (state: Partial<AuthState>) => set(state),
 
   initialize: async () => {
+    // 防止重复初始化
     if (get().initialized) return;
 
-    const token = localStorage.getItem('accessToken');
+    const storage = getLocalStorage();
+
+    if (!storage) {
+      set({ initialized: true, isLoading: false, isAuthenticated: false });
+
+      return;
+    }
+
+    const token = storage.getItem('accessToken');
 
     if (!token) {
       set({ initialized: true, isLoading: false, isAuthenticated: false });
@@ -67,21 +86,26 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       await get().refreshUser();
       set({ initialized: true, isLoading: false });
     } catch (error) {
+      console.error('初始化认证状态失败:', error);
       set({ initialized: true, isLoading: false, isAuthenticated: false });
     }
   },
 
   checkAuth: () => {
-    const token = localStorage.getItem('accessToken');
+    const storage = getLocalStorage();
+
+    if (!storage) return false;
+
+    const token = storage.getItem('accessToken');
     const { isAuthenticated, user, initialized } = get();
 
     // 如果尚未初始化，开始初始化过程
-    if (!initialized) {
+    if (!initialized && typeof window !== 'undefined') {
       get().initialize();
     }
 
     // 如果有token但没有用户信息，尝试刷新用户
-    if (token && !user && !get().isLoading) {
+    if (token && !user && !get().isLoading && typeof window !== 'undefined') {
       get().refreshUser();
     }
 
@@ -101,22 +125,15 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       }
 
       // 存储 tokens 到 localStorage
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      const storage = getLocalStorage();
+
+      if (storage) {
+        storage.setItem('accessToken', accessToken);
+        storage.setItem('refreshToken', refreshToken);
+      }
 
       // 设置用户信息和认证状态
       set({ user, isLoading: false, isAuthenticated: true, initialized: true });
-
-      // 获取重定向 URL
-      const params = new URLSearchParams(window.location.search);
-      const redirectUrl = params.get('redirect');
-
-      // 使用路由器重定向而不是window.location，防止页面完全刷新
-      // if (redirectUrl && !redirectUrl.includes('login')) {
-      //   window.location.href = decodeURIComponent(redirectUrl);
-      // } else {
-      //   window.location.href = '/';
-      // }
     } catch (error) {
       console.log('🚀 ~ login: ~ error:', error);
       set({ isLoading: false, isAuthenticated: false });
@@ -132,18 +149,35 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       });
 
       // 清除 localStorage 中的 tokens
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      const storage = getLocalStorage();
+
+      if (storage) {
+        storage.removeItem('accessToken');
+        storage.removeItem('refreshToken');
+      }
 
       set({ user: null, isAuthenticated: false });
-      window.location.href = '/auth/login';
+
+      // 使用安全的方式进行重定向
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/login';
+      }
     } catch (error) {
       console.error('Logout failed:', error);
       // 即使请求失败也清除本地状态
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      const storage = getLocalStorage();
+
+      if (storage) {
+        storage.removeItem('accessToken');
+        storage.removeItem('refreshToken');
+      }
+
       set({ user: null, isAuthenticated: false });
-      window.location.href = '/auth/login';
+
+      // 使用安全的方式进行重定向
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/login';
+      }
     }
   },
 
@@ -154,8 +188,12 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       const { accessToken, refreshToken, ...userData } = response;
 
       // 存储 tokens 到 localStorage
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      const storage = getLocalStorage();
+
+      if (storage) {
+        storage.setItem('accessToken', accessToken);
+        storage.setItem('refreshToken', refreshToken);
+      }
 
       set({
         user: userData,
@@ -163,7 +201,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         isAuthenticated: true,
         initialized: true,
       });
-      window.location.href = '/';
+
+      // 使用安全的方式进行重定向
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     } catch (error) {
       set({ isLoading: false, isAuthenticated: false });
       throw error;
@@ -187,8 +229,12 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     } catch (error) {
       console.error('Failed to refresh user:', error);
       // 刷新失败时清除令牌，避免无限尝试
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      const storage = getLocalStorage();
+
+      if (storage) {
+        storage.removeItem('accessToken');
+        storage.removeItem('refreshToken');
+      }
       set({ isAuthenticated: false, user: null });
     }
   },
@@ -201,10 +247,14 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         return null;
       }
 
-      const token = localStorage.getItem('accessToken');
+      const storage = getLocalStorage();
+
+      if (!storage) return null;
+
+      const token = storage.getItem('accessToken');
 
       // 防止无限循环：只有当没有刷新中且有token时才刷新用户
-      if (token && !get().isLoading) {
+      if (token && !get().isLoading && typeof window !== 'undefined') {
         // 设置isLoading为true防止重复调用
         set({ isLoading: true });
         get().refreshUser();

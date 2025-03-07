@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import {
   Form,
   Input,
@@ -18,7 +18,8 @@ import { EyeFilledIcon, EyeSlashFilledIcon } from '@/components/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { changePassword } from '@/api/auth';
 
-const ChangePasswordPage = () => {
+// 新增一个客户端组件
+function ChangePasswordContent() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -260,6 +261,18 @@ const ChangePasswordPage = () => {
       </Card>
     </div>
   );
-};
+}
 
-export default ChangePasswordPage;
+export default function ChangePasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          加载中...
+        </div>
+      }
+    >
+      <ChangePasswordContent />
+    </Suspense>
+  );
+}

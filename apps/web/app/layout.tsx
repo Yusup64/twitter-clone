@@ -21,13 +21,6 @@ export default function RootLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { getUser } = useAuthStore();
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    // 只有当点击的是遮罩层时才关闭侧边栏
-    if (e.target === e.currentTarget) {
-      setIsSidebarOpen(false);
-    }
-  };
-
   // Check if the current route is an auth route
   const isAuthPage =
     typeof window !== 'undefined' &&

@@ -152,6 +152,10 @@ export const TweetCard: React.FC<TweetCardProps> = ({
     }
   };
 
+  if (!tweet) {
+    return null;
+  }
+
   return (
     <>
       <Card
@@ -163,7 +167,7 @@ export const TweetCard: React.FC<TweetCardProps> = ({
             <Avatar
               alt={tweet.user.username}
               className="cursor-pointer"
-              src={tweet.user.profilePhoto}
+              src={tweet.user.profilePhoto || ''}
             />
           </Link>
           <div className="flex flex-1 justify-between items-start">
@@ -241,6 +245,10 @@ export const TweetCard: React.FC<TweetCardProps> = ({
               {tweet.mediaUrls.map((url, index) => {
                 const isVideo = url.match(/\.(mp4|webm|ogg|mov)($|\?)/i);
 
+                if (!url) {
+                  return null;
+                }
+
                 return isVideo ? (
                   <div
                     key={index}
@@ -250,6 +258,7 @@ export const TweetCard: React.FC<TweetCardProps> = ({
                       controls
                       className="w-full h-full object-cover"
                       preload="metadata"
+                      src={url}
                     >
                       <source src={url} type={`video/${isVideo[1]}`} />
                       <track kind="captions" label="中文" src="" />
@@ -270,7 +279,7 @@ export const TweetCard: React.FC<TweetCardProps> = ({
                     <Image
                       alt={`Media ${index + 1}`}
                       className="w-full h-full object-cover"
-                      src={url}
+                      src={url || ''}
                     />
                   </button>
                 );
