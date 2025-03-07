@@ -8,7 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { MessagesService } from './messages.service';
 import { JwtAuthGuard } from '@/src/common/guards/jwt-auth.guard';
 import { UserAuth } from '@/src/common/decorators/user.decorator';
@@ -31,6 +31,7 @@ export class MessagesController {
    */
   @Get('conversations')
   @ApiOperation({ summary: 'Get user conversations' })
+  @ApiBearerAuth('access-token')
   getConversations(@UserAuth() user) {
     return this.messagesService.getConversations(user.id);
   }
@@ -43,6 +44,7 @@ export class MessagesController {
    */
   @Get('following')
   @ApiOperation({ summary: 'Get following users for messaging' })
+  @ApiBearerAuth('access-token')
   getFollowingUsers(@UserAuth() user) {
     return this.messagesService.getFollowingUsers(user.id);
   }
@@ -56,6 +58,7 @@ export class MessagesController {
    */
   @Get(':userId')
   @ApiOperation({ summary: 'Get messages with a user' })
+  @ApiBearerAuth('access-token')
   getMessages(@UserAuth() user, @Param('userId') userId: string) {
     return this.messagesService.getMessages(user.id, userId);
   }
@@ -70,6 +73,7 @@ export class MessagesController {
    */
   @Post(':userId')
   @ApiOperation({ summary: 'Send message to a user' })
+  @ApiBearerAuth('access-token')
   sendMessage(
     @UserAuth() user,
     @Param('userId') userId: string,
@@ -86,6 +90,8 @@ export class MessagesController {
    * @returns A success message confirming the operation.
    */
   @Post('read/:conversationId')
+  @ApiOperation({ summary: 'Mark a conversation as read' })
+  @ApiBearerAuth('access-token')
   markAsRead(
     @UserAuth('id') userId: string,
     @Param('conversationId') conversationId: string,
@@ -102,6 +108,7 @@ export class MessagesController {
    */
   @Delete(':messageId')
   @ApiOperation({ summary: 'Delete a message' })
+  @ApiBearerAuth('access-token')
   async deleteMessage(@UserAuth() user, @Param('messageId') messageId: string) {
     return this.messagesService.deleteMessage(user.id, messageId);
   }
@@ -116,6 +123,7 @@ export class MessagesController {
    */
   @Get('unread/:userId')
   @ApiOperation({ summary: 'Get unread messages with a user' })
+  @ApiBearerAuth('access-token')
   getUnreadMessages(
     @UserAuth() user,
     @Param('userId') userId: string,
@@ -136,6 +144,7 @@ export class MessagesController {
    */
   @Get('unread-count')
   @ApiOperation({ summary: 'Get all unread message count' })
+  @ApiBearerAuth('access-token')
   getUnreadCount(@UserAuth() user) {
     return this.messagesService.getUnreadCount(user.id);
   }

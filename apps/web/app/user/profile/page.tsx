@@ -13,28 +13,28 @@ export default function ProfilePage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // 确保 auth store 已初始化
+    // ensure the auth store is initialized
     if (!initialized) {
       initialize();
     }
 
-    // 检查认证状态
+    // check the authentication status
     const isAuthenticated = checkAuth();
 
-    // 如果认证失败且已初始化完成，则重定向到登录页面
+    // if the authentication fails and the initialization is complete, redirect to the login page
     if (!isAuthenticated && initialized && !isLoading) {
       router.push(
         `/auth/login?redirect=${encodeURIComponent('/user/profile')}`,
       );
     }
 
-    // 如果用户数据已加载或确认未认证，停止检查
+    // if the user data is loaded or confirmed not authenticated, stop checking
     if ((user && initialized) || (!isAuthenticated && initialized)) {
       setIsCheckingAuth(false);
     }
   }, [user, initialized, isLoading]);
 
-  // 显示加载状态，当正在检查认证或正在加载用户信息时
+  // show loading state, when checking authentication or loading user information
   if (isCheckingAuth || isLoading) {
     return (
       <div className="w-full max-w-lg mx-auto px-5 animate-pulse">

@@ -24,7 +24,6 @@ import { MessagesModule } from './modules/messages/messages.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { BookmarksModule } from './modules/bookmarks/bookmarks.module';
 import { SeedModule } from './common/shared/seed/seed.module';
-import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -44,7 +43,6 @@ import { SearchModule } from './modules/search/search.module';
     NotificationsModule,
     BookmarksModule,
     SeedModule,
-    SearchModule,
   ],
   controllers: [AppController, AuthController],
   providers: [

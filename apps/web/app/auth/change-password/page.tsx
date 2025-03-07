@@ -268,7 +268,7 @@ export default function ChangePasswordPage() {
     <Suspense
       fallback={
         <div className="flex justify-center items-center min-h-screen">
-          加载中...
+          Loading...
         </div>
       }
     >

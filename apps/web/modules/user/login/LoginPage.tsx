@@ -25,16 +25,16 @@ const LoginPage = () => {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/';
 
-  // 确保认证存储已初始化
+  // ensure the authentication store is initialized
   useEffect(() => {
     if (!initialized) {
       initialize();
     }
   }, [initialized, initialize]);
 
-  // 处理重定向逻辑
+  // handle redirect logic
   useEffect(() => {
-    // 只有当初始化完成且用户已认证时才进行重定向
+    // only redirect if initialization is complete and user is authenticated
     if (initialized && isAuthenticated && user) {
       if (redirectTo && redirectTo !== '/auth/login') {
         router.push(redirectTo);
@@ -74,11 +74,11 @@ const LoginPage = () => {
     });
   };
 
-  // 如果正在加载且已认证，显示加载中
+  // if loading and authenticated, show loading
   if (isAuthenticated && user) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p>加载中...</p>
+        <p>Loading...</p>
       </div>
     );
   }

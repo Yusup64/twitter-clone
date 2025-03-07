@@ -6,7 +6,7 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserAuth } from '@/src/common/decorators/user.decorator';
 import { JwtAuthGuard } from '@/src/common/guards/jwt-auth.guard';
 import { BookmarksService } from './bookmarks.service';
@@ -29,6 +29,7 @@ export class BookmarksController {
    */
   @Get()
   @ApiOperation({ summary: 'Get user bookmarks' })
+  @ApiBearerAuth('access-token')
   getBookmarks(@UserAuth('id') userId: string) {
     return this.bookmarksService.getBookmarks(userId);
   }
@@ -42,6 +43,7 @@ export class BookmarksController {
    */
   @Post(':tweetId')
   @ApiOperation({ summary: 'Add a tweet to bookmarks' })
+  @ApiBearerAuth('access-token')
   addBookmark(
     @UserAuth('id') userId: string,
     @Param('tweetId') tweetId: string,
@@ -58,6 +60,7 @@ export class BookmarksController {
    */
   @Delete(':tweetId')
   @ApiOperation({ summary: 'Remove a tweet from bookmarks' })
+  @ApiBearerAuth('access-token')
   removeBookmark(
     @UserAuth('id') userId: string,
     @Param('tweetId') tweetId: string,

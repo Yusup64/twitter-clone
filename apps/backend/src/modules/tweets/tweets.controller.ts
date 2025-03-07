@@ -14,7 +14,7 @@ import { JwtAuthGuard } from '@/src/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/src/common/guards/roles.guard';
 import { UserAuth } from '@/src/common/decorators/user.decorator';
 import { CreateTweetDto, UpdateTweetDto, CreatePollDto } from './dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { IsPublic, Roles } from '@/src/common/decorators';
 import { Role } from '@/src/common/enums/role.enum';
 
@@ -48,6 +48,7 @@ export class TweetsController {
 
   @Put(':id')
   @ApiOperation({ summary: 'Update a tweet by id' })
+  @ApiBearerAuth('access-token')
   update(
     @UserAuth() user,
     @Param('id') id: string,
@@ -58,25 +59,28 @@ export class TweetsController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a tweet' })
-  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   async deleteTweet(@UserAuth() user, @Param('id') tweetId: string) {
     return this.tweetsService.deleteTweet(user.id, tweetId);
   }
 
   @Post(':id/like')
   @ApiOperation({ summary: 'Like a tweet by id' })
+  @ApiBearerAuth('access-token')
   like(@UserAuth() user, @Param('id') tweetId: string) {
     return this.tweetsService.likeTweet(user.id, tweetId);
   }
 
   @Post(':id/retweet')
   @ApiOperation({ summary: 'Retweet a tweet by id' })
+  @ApiBearerAuth('access-token')
   retweet(@UserAuth() user, @Param('id') tweetId: string) {
     return this.tweetsService.retweet(user.id, tweetId);
   }
 
   @Post(':id/comment')
   @ApiOperation({ summary: 'Add comment to tweet' })
+  @ApiBearerAuth('access-token')
   addComment(
     @UserAuth() user,
     @Param('id') tweetId: string,
@@ -87,12 +91,14 @@ export class TweetsController {
 
   @Get('timeline')
   @ApiOperation({ summary: 'Get user timeline' })
+  @ApiBearerAuth('access-token')
   getTimeline(@UserAuth() user, @Query() query) {
     return this.tweetsService.getTimeline(user.id, query);
   }
 
   @Post('with-poll')
   @ApiOperation({ summary: 'Create tweet with poll' })
+  @ApiBearerAuth('access-token')
   createTweetWithPoll(
     @UserAuth() user,
     @Body() createTweetDto: CreateTweetDto,
@@ -107,6 +113,7 @@ export class TweetsController {
 
   @Post('poll/:id/vote')
   @ApiOperation({ summary: 'Vote on a poll' })
+  @ApiBearerAuth('access-token')
   votePoll(
     @UserAuth() user,
     @Param('id') pollId: string,
@@ -143,6 +150,8 @@ export class TweetsController {
   }
 
   @Get('cache/stats')
+  @ApiOperation({ summary: 'Get cache stats' })
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async getCacheStats() {

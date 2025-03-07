@@ -13,7 +13,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Twitter API')
-    .setDescription('The Median API description')
+    .setDescription('The Twitter API description')
     .setVersion('0.1')
     .addBearerAuth(
       {

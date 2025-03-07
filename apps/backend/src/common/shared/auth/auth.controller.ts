@@ -14,6 +14,7 @@ import { AuthService } from './auth.service';
 import { IsPublic } from '@/src/common/decorators';
 import { RegisterDto, LoginDto, UpdateProfileDto } from '../dto';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOperation,
   ApiResponse,
@@ -37,6 +38,7 @@ export class AuthController {
   @IsPublic()
   @Post('register')
   @ApiCreatedResponse({ type: RegisterDto })
+  @ApiOperation({ summary: 'Register a new user' })
   @HttpCode(HttpStatus.OK)
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
@@ -44,6 +46,7 @@ export class AuthController {
 
   @Post('login')
   @ApiCreatedResponse({ type: LoginDto })
+  @ApiOperation({ summary: 'Login a user' })
   @HttpCode(HttpStatus.OK)
   @IsPublic()
   async login(@Body() dto: LoginDto) {
@@ -53,6 +56,8 @@ export class AuthController {
   @IsPublic()
   @Post('refresh')
   @ApiCreatedResponse({ type: LoginDto })
+  @ApiOperation({ summary: 'Refresh tokens' })
+  @ApiBearerAuth('access-token')
   @HttpCode(HttpStatus.OK)
   async refreshTokens(@Req() req) {
     const refreshToken = req.headers.authorization?.split(' ')[1];
@@ -60,20 +65,24 @@ export class AuthController {
   }
 
   @Get('me')
-  @ApiCreatedResponse()
+  @ApiOperation({ summary: 'Get user profile' })
+  @ApiBearerAuth('access-token')
   @HttpCode(HttpStatus.OK)
   async getMe(@UserAuth() user: User) {
     return this.authService.getMe(user);
   }
 
   @Post('update-profile')
-  @ApiCreatedResponse({ type: UpdateProfileDto })
+  @ApiOperation({ summary: 'Update user profile' })
+  @ApiBearerAuth('access-token')
   @HttpCode(HttpStatus.OK)
   async updateProfile(@UserAuth() user: User, @Body() dto: UpdateProfileDto) {
     return this.authService.updateProfile(user.id, dto);
   }
 
   @Post('verify')
+  @ApiOperation({ summary: 'Verify token' })
+  @ApiBearerAuth('access-token')
   @HttpCode(HttpStatus.OK)
   async verifyToken(@Req() req) {
     const token = req.headers.authorization?.split(' ')[1];
@@ -107,6 +116,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
   @ApiResponse({ status: 400, description: 'Invalid current password' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiBearerAuth('access-token')
   async changePassword(
     @Request() req,
     @Body() changePasswordDto: ChangePasswordDto,

@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/src/common/guards/jwt-auth.guard';
 import { UserAuth } from '@/src/common/decorators/user.decorator';
 import { IsPublic } from '@/src/common/decorators';
@@ -31,18 +31,21 @@ export class UsersController {
 
   @Post(':id/follow')
   @ApiOperation({ summary: 'Follow user' })
+  @ApiBearerAuth('access-token')
   followUser(@UserAuth() user, @Param('id') followingId: string) {
     return this.usersService.followUser(user.id, followingId);
   }
 
   @Post(':id/unfollow')
   @ApiOperation({ summary: 'Unfollow user' })
+  @ApiBearerAuth('access-token')
   unfollowUser(@UserAuth() user, @Param('id') followingId: string) {
     return this.usersService.unfollowUser(user.id, followingId);
   }
 
   @Get(':id/followers')
   @ApiOperation({ summary: 'Get user followers' })
+  @ApiBearerAuth('access-token')
   @IsPublic()
   getUserFollowers(@Param('id') userId: string, @Query() query) {
     return this.usersService.getUserFollowers(userId, query);
@@ -50,6 +53,7 @@ export class UsersController {
 
   @Get(':id/following')
   @ApiOperation({ summary: 'Get user following' })
+  @ApiBearerAuth('access-token')
   @IsPublic()
   getUserFollowing(@Param('id') userId: string, @Query() query) {
     return this.usersService.getUserFollowing(userId, query);
@@ -57,6 +61,7 @@ export class UsersController {
 
   @Get('search')
   @ApiOperation({ summary: 'Search users' })
+  @ApiBearerAuth('access-token')
   @IsPublic()
   async searchUsers(
     @Query('query') query: string,
@@ -67,6 +72,7 @@ export class UsersController {
 
   @Get('suggested')
   @ApiOperation({ summary: 'Get suggested users to follow' })
+  @ApiBearerAuth('access-token')
   async getSuggestedUsers(@UserAuth() user, @Query() query) {
     return this.usersService.getSuggestedUsers(user.id, query);
   }

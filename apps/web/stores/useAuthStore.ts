@@ -17,7 +17,7 @@ const getLocalStorage = () => {
   return null;
 };
 
-// 添加初始化时从本地存储恢复状态的功能
+// add the functionality to restore the state from local storage when initializing
 const getInitialState = () => {
   if (typeof window === 'undefined') {
     return {
@@ -32,8 +32,8 @@ const getInitialState = () => {
 
   return {
     user: null,
-    isLoading: !!token, // 如果有token，将自动开始加载
-    isAuthenticated: !!token, // 有token就先假设已认证
+    isLoading: !!token, // if there is a token, it will automatically start loading
+    isAuthenticated: !!token, // if there is a token, assume it is authenticated
   };
 };
 

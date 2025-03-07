@@ -3,7 +3,7 @@ import { PollsService } from './polls.service';
 import { JwtAuthGuard } from '@/src/common/guards/jwt-auth.guard';
 import { UserAuth } from '@/src/common/decorators/user.decorator';
 import { CreatePollDto } from '../tweets/dto/create-poll.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('polls')
 @Controller('polls')
@@ -13,6 +13,7 @@ export class PollsController {
 
   @Post(':tweetId')
   @ApiOperation({ summary: 'Create a poll' })
+  @ApiBearerAuth('access-token')
   createPoll(
     @UserAuth() user,
     @Param('tweetId') tweetId: string,
@@ -23,6 +24,7 @@ export class PollsController {
 
   @Post(':pollId/vote/:optionId')
   @ApiOperation({ summary: 'Vote in a poll' })
+  @ApiBearerAuth('access-token')
   vote(
     @UserAuth() user,
     @Param('pollId') pollId: string,
@@ -33,6 +35,7 @@ export class PollsController {
 
   @Get(':pollId/results')
   @ApiOperation({ summary: 'Get poll results' })
+  @ApiBearerAuth('access-token')
   getPollResults(@Param('pollId') pollId: string) {
     return this.pollsService.getPollResults(pollId);
   }

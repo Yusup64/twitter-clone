@@ -23,7 +23,7 @@ export class TweetsService {
   async create(userId: string, createTweetDto: CreateTweetDto) {
     const { content, mediaUrls = [], hashtags = [] } = createTweetDto;
 
-    // 提取内容中的hashtags（如果前端没有提供）
+    // extract hashtags from the content (if not provided by the frontend)
     let extractedHashtags: string[] = hashtags;
     if (hashtags.length === 0) {
       const hashtagRegex = /#(\w+)/g;
@@ -33,14 +33,14 @@ export class TweetsService {
       }
     }
 
-    // 创建推文并关联hashtags
+    // create the tweet and associate hashtags
     const tweet = await this.prisma.tweet.create({
       data: {
         content,
         mediaUrls,
         hasMedia: mediaUrls.length > 0,
         userId,
-        // 处理hashtags
+        // handle hashtags
         hashtags:
           extractedHashtags.length > 0
             ? {
@@ -72,40 +72,43 @@ export class TweetsService {
       },
     });
 
-    // 创建推文后，清除相关缓存
+    // after creating, invalidate the caches
     await this.invalidateCaches(userId);
 
-    // 清除全局推文列表缓存
+    // invalidate the global tweets list cache
     await this.redisService.delByPattern(`${CachePrefix.TWEETS}all:*`);
-    this.logger.log(`全局推文列表缓存已清除`);
+    this.logger.log(`global tweets list cache invalidated`);
 
     return tweet;
   }
 
-  // 缓存相关方法
+  // cache related methods
   private async invalidateCaches(userId: string) {
     try {
-      // 清除用户时间线缓存
+      // invalidate the user timeline cache
       await this.redisService.invalidateUserTimelines(userId);
 
-      // 获取用户的关注者
+      // get the followers
       const followers = await this.prisma.follow.findMany({
         where: { followingId: userId },
         select: { followerId: true },
       });
 
-      // 清除关注者的时间线缓存
+      //  invalidate the followers timelines cache
       if (followers.length > 0) {
         const followerIds = followers.map((f) => f.followerId);
         await this.redisService.invalidateFollowersTimelines(followerIds);
       }
 
-      // 清除热门话题缓存
+      // invalidate the trending hashtags cache
       await this.redisService.delByPattern(`${CachePrefix.TRENDING}*`);
 
-      this.logger.log(`缓存已成功清除: userId=${userId}`);
+      this.logger.log(`caches invalidated successfully: userId=${userId}`);
     } catch (error) {
-      this.logger.error(`清除缓存失败: ${error.message}`, error.stack);
+      this.logger.error(
+        `failed to invalidate caches: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
@@ -145,11 +148,11 @@ export class TweetsService {
         },
       });
 
-      // 如果提供了用户ID，检查用户是否喜欢或书签了每条推文
+      // if a user id is provided, check if the user has already liked or bookmarked each tweet
       if (userId) {
         const tweetsWithUserState = await Promise.all(
           tweets.map(async (tweet) => {
-            // 检查用户是否喜欢此推文
+            // check if the user has already liked this tweet
             const isLiked = await this.prisma.like.findUnique({
               where: {
                 userId_tweetId: {
@@ -159,7 +162,7 @@ export class TweetsService {
               },
             });
 
-            // 检查用户是否添加书签
+            // check if the user has already bookmarked
             const isBookmarked = await this.prisma.bookmark.findUnique({
               where: {
                 userId_tweetId: {
@@ -169,7 +172,7 @@ export class TweetsService {
               },
             });
 
-            // 检查用户是否转发
+            // check if the user has already retweeted
             const isRetweeted = await this.prisma.retweet.findUnique({
               where: {
                 userId_tweetId: {
@@ -185,7 +188,7 @@ export class TweetsService {
               isBookmarked: !!isBookmarked,
               isRetweeted: !!isRetweeted,
             };
-          })
+          }),
         );
 
         return tweetsWithUserState;
@@ -239,9 +242,9 @@ export class TweetsService {
         throw new NotFoundException('Tweet not found');
       }
 
-      // 如果提供了用户ID，检查用户是否喜欢、转发或添加书签
+      // if a user id is provided, check if the user has already liked, retweeted or bookmarked
       if (userId) {
-        // 检查用户是否喜欢此推文
+        // check if the user has already liked this tweet
         const isLiked = await this.prisma.like.findUnique({
           where: {
             userId_tweetId: {
@@ -251,7 +254,7 @@ export class TweetsService {
           },
         });
 
-        // 检查用户是否添加书签
+        // check if the user has already bookmarked
         const isBookmarked = await this.prisma.bookmark.findUnique({
           where: {
             userId_tweetId: {
@@ -261,7 +264,7 @@ export class TweetsService {
           },
         });
 
-        // 检查用户是否转发
+        // check if the user has already retweeted
         const isRetweeted = await this.prisma.retweet.findUnique({
           where: {
             userId_tweetId: {
@@ -334,7 +337,7 @@ export class TweetsService {
       },
     });
 
-    // 更新后清除相关缓存
+    // after updating, invalidate the caches
     await this.redisService.delByPattern(`${CachePrefix.TWEET}${id}`);
     await this.invalidateCaches(userId);
     await this.redisService.delByPattern(`${CachePrefix.TWEETS}all:*`);
@@ -387,7 +390,7 @@ export class TweetsService {
     });
 
     if (existingLike) {
-      // 如果已经点赞，则取消点赞
+      // if already liked, unlike
       await this.prisma.like.delete({
         where: {
           userId_tweetId: {
@@ -397,13 +400,13 @@ export class TweetsService {
         },
       });
 
-      // 清除推文缓存
+      // invalidate the tweet cache
       await this.redisService.delByPattern(`${CachePrefix.TWEET}${tweetId}`);
 
       return { message: 'Tweet unliked successfully' };
     }
 
-    // 创建新的点赞
+    // create a new like
     await this.prisma.like.create({
       data: {
         userId,
@@ -411,7 +414,7 @@ export class TweetsService {
       },
     });
 
-    // 创建通知
+    // create a notification
     if (tweet.userId !== userId) {
       await this.prisma.notification.create({
         data: {
@@ -423,7 +426,7 @@ export class TweetsService {
       });
     }
 
-    // 清除推文缓存
+    // invalidate the tweet cache
     await this.redisService.delByPattern(`${CachePrefix.TWEET}${tweetId}`);
 
     return { message: 'Tweet liked successfully' };
@@ -438,7 +441,7 @@ export class TweetsService {
       throw new NotFoundException('Tweet not found');
     }
 
-    // 检查是否已经转发
+    // check if the user has already retweeted
     const existingRetweet = await this.prisma.retweet.findUnique({
       where: {
         userId_tweetId: {
@@ -449,7 +452,7 @@ export class TweetsService {
     });
 
     if (existingRetweet) {
-      // 如果已经转发，则取消转发
+      // if already retweeted, unlike
       await this.prisma.retweet.delete({
         where: {
           userId_tweetId: {
@@ -459,14 +462,14 @@ export class TweetsService {
         },
       });
 
-      // 清除推文缓存和时间线缓存
+      // invalidate the tweet cache and the timeline cache
       await this.redisService.delByPattern(`${CachePrefix.TWEET}${tweetId}`);
       await this.invalidateCaches(userId);
 
       return { message: 'Tweet unretweeted successfully' };
     }
 
-    // 创建新的转发
+    // create a new retweet
     await this.prisma.retweet.create({
       data: {
         userId,
@@ -474,7 +477,7 @@ export class TweetsService {
       },
     });
 
-    // 创建通知
+    // create a notification
     if (tweet.userId !== userId) {
       await this.prisma.notification.create({
         data: {
@@ -486,14 +489,14 @@ export class TweetsService {
       });
     }
 
-    // 清除推文缓存和时间线缓存
+    // invalidate the tweet cache and the timeline cache
     await this.redisService.delByPattern(`${CachePrefix.TWEET}${tweetId}`);
     await this.invalidateCaches(userId);
 
     return { message: 'Tweet retweeted successfully' };
   }
 
-  // 添加评论功能
+  // add comment functionality
   async addComment(userId: string, tweetId: string, content: string) {
     const tweet = await this.prisma.tweet.findUnique({
       where: { id: tweetId },
@@ -521,7 +524,7 @@ export class TweetsService {
       },
     });
 
-    // 创建通知
+    // create a notification
     if (tweet.userId !== userId) {
       await this.prisma.notification.create({
         data: {
@@ -533,39 +536,41 @@ export class TweetsService {
       });
     }
 
-    // 清除推文缓存
+    // invalidate the tweet cache
     await this.redisService.delByPattern(`${CachePrefix.TWEET}${tweetId}`);
 
     return comment;
   }
 
-  // 获取用户时间线
+  // get user timeline
   async getTimeline(userId: string, query: any) {
     const { page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
-    // 尝试从缓存获取
+    // try to get from cache
     const cachedTimeline = await this.redisService.getTimeline(userId, page);
 
     if (cachedTimeline) {
-      this.logger.log(`从缓存获取时间线: userId=${userId}, page=${page}`);
+      this.logger.log(
+        `get timeline from cache: userId=${userId}, page=${page}`,
+      );
       return cachedTimeline;
     }
 
-    // 获取用户关注的人的ID
+    // get the ids of the users the user is following
     const following = await this.prisma.follow.findMany({
       where: { followerId: userId },
       select: { followingId: true },
     });
 
     const followingIds = following.map((f) => f.followingId);
-    followingIds.push(userId); // 包含用户自己的推文
+    followingIds.push(userId); // include the user's own tweets
 
-    // 获取这些用户的推文
+    // get the tweets of the users the user is following
     const timeline = await this.prisma.tweet.findMany({
       where: {
         userId: { in: followingIds },
-        parentId: null, // 只获取原创推文，不包括回复
+        parentId: null, // only get original tweets, not replies
       },
       skip,
       take: Number(limit),
@@ -591,9 +596,9 @@ export class TweetsService {
       },
     });
 
-    // 存入缓存，使用较短的过期时间
+    // cache the timeline
     await this.redisService.setTimeline(userId, page, timeline);
-    this.logger.log(`时间线已缓存: userId=${userId}, page=${page}`);
+    this.logger.log(`timeline cached: userId=${userId}, page=${page}`);
 
     return timeline;
   }
@@ -648,7 +653,7 @@ export class TweetsService {
       },
     });
 
-    // 创建后清除相关缓存
+    // after creating, invalidate the caches
     await this.invalidateCaches(userId);
     await this.redisService.delByPattern(`${CachePrefix.TWEETS}all:*`);
 
@@ -656,11 +661,11 @@ export class TweetsService {
   }
 
   async getTweetById(id: string) {
-    // 尝试从缓存获取
+    // try to get from cache
     const cachedTweet = await this.redisService.getTweet(id);
 
     if (cachedTweet) {
-      this.logger.log(`从缓存获取推文详情: ${id}`);
+      this.logger.log(`get tweet details from cache: ${id}`);
       return cachedTweet;
     }
 
@@ -690,9 +695,9 @@ export class TweetsService {
       throw new NotFoundException('Tweet not found');
     }
 
-    // 存入缓存
+    // cache the tweet details
     await this.redisService.setTweet(id, tweet);
-    this.logger.log(`推文详情已缓存: ${id}`);
+    this.logger.log(`tweet details cached: ${id}`);
 
     return tweet;
   }
@@ -711,7 +716,7 @@ export class TweetsService {
       throw new ForbiddenException('Poll has expired');
     }
 
-    // 检查用户是否已经投票
+    // check if the user has already voted
     const existingVote = await this.prisma.pollVote.findFirst({
       where: {
         userId,
@@ -741,7 +746,7 @@ export class TweetsService {
       },
     });
 
-    // 清除相关推文缓存
+    // invalidate the tweet cache
     const tweet = await this.prisma.tweet.findFirst({
       where: {
         poll: {
@@ -755,7 +760,7 @@ export class TweetsService {
       await this.redisService.delByPattern(`${CachePrefix.TWEET}${tweet.id}`);
     }
 
-    // 返回更新后的投票结果
+    // return the updated poll results
     return this.prisma.poll.findUnique({
       where: { id: pollId },
       include: {
@@ -789,7 +794,7 @@ export class TweetsService {
       where: { id: tweetId },
     });
 
-    // 删除后清除相关缓存
+    // after deleting, invalidate the caches
     await this.redisService.delByPattern(`${CachePrefix.TWEET}${tweetId}`);
     await this.invalidateCaches(userId);
     await this.redisService.delByPattern(`${CachePrefix.TWEETS}all:*`);
@@ -798,16 +803,16 @@ export class TweetsService {
   }
 
   async searchTweets(query: string, limit: number = 10) {
-    // 尝试从缓存获取
+    // try to get from cache
     const cacheKey = `${CachePrefix.SEARCH}tweets:${query}:${limit}`;
     const cachedResults = await this.redisService.get(cacheKey);
 
     if (cachedResults) {
-      this.logger.log(`从缓存获取搜索结果: ${cacheKey}`);
+      this.logger.log(`get search results from cache: ${cacheKey}`);
       return cachedResults;
     }
 
-    // 缓存未命中，从数据库搜索
+    // cache not hit, search from database
     const tweets = await this.prisma.tweet.findMany({
       where: {
         content: {
@@ -838,9 +843,9 @@ export class TweetsService {
       },
     });
 
-    // 存入缓存，使用较短的过期时间
+    // cache the results
     await this.redisService.set(cacheKey, tweets, CACHE_TTL.SEARCH);
-    this.logger.log(`搜索结果已缓存: ${cacheKey}`);
+    this.logger.log(`search results cached: ${cacheKey}`);
 
     return tweets;
   }
