@@ -149,14 +149,22 @@ pnpm install
 cp .env.example .env
 # Edit .env with your database credentials and other settings
 ```
+4. Set up DOCKER environment MAKE sure you have latest redis and Postgres SQL installed
+```bash
+docker pull redis
+docker pull postgres
+docker ps -a
+docker start enter_your_container_id
+# Edit .env with your database credentials and other settings
+```
 
-4. Set up the database
+5. Set up the database
 ```bash
 pnpm db:generate
 pnpm db:push
 ```
 
-5. Start the development servers
+6. Start the development servers
 ```bash
 pnpm dev
 ```
