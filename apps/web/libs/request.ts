@@ -118,6 +118,7 @@ class Request {
         return Promise.resolve(parsedData?.data);
       } else if (internalStatusCode === 401) {
         location.href = '/auth/login';
+
         return Promise.reject({
           statusCode: 401,
           message: parsedData?.message || 'Unexpected error occurred',

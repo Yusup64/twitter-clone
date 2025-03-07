@@ -24,6 +24,7 @@ export default function HomePage() {
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const fetchTweets = async (pageNum: number) => {
+    if (isLoading || !hasMore) return;
     try {
       if (pageNum > 1) {
         setIsLoadingMore(true);
@@ -40,7 +41,10 @@ export default function HomePage() {
 
       setHasMore(newTweets.length === 10);
     } catch (error) {
-      console.error('Failed to fetch tweets:', error);
+      console.log('🚀 ~ fetchTweets ~ error:', error);
+      setIsLoading(false);
+      setIsLoadingMore(false);
+      setHasMore(false);
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
