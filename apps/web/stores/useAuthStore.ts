@@ -8,10 +8,30 @@ import {
   updateUserProfile,
 } from '@/api/user';
 
+// 添加初始化时从本地存储恢复状态的功能
+const getInitialState = () => {
+  if (typeof window === 'undefined') {
+    return {
+      user: null,
+      isLoading: false,
+      isAuthenticated: false,
+    };
+  }
+
+  const token = localStorage.getItem('accessToken');
+
+  return {
+    user: null,
+    isLoading: !!token, // 如果有token，将自动开始加载
+    isAuthenticated: !!token, // 有token就先假设已认证
+  };
+};
+
 interface AuthState {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  initialized: boolean;
 
   login: (credentials: any) => Promise<void>;
   logout: () => void;
@@ -22,18 +42,50 @@ interface AuthState {
   getUser: () => User | null;
   set: (state: Partial<AuthState>) => void;
   setUser: (user: User) => void;
+  initialize: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()((set, get) => ({
-  user: null,
-  isLoading: false,
-  isAuthenticated: false,
+  ...getInitialState(),
+  initialized: false,
+
   set: (state: Partial<AuthState>) => set(state),
+
+  initialize: async () => {
+    if (get().initialized) return;
+
+    const token = localStorage.getItem('accessToken');
+
+    if (!token) {
+      set({ initialized: true, isLoading: false, isAuthenticated: false });
+
+      return;
+    }
+
+    set({ isLoading: true });
+    try {
+      await get().refreshUser();
+      set({ initialized: true, isLoading: false });
+    } catch (error) {
+      set({ initialized: true, isLoading: false, isAuthenticated: false });
+    }
+  },
 
   checkAuth: () => {
     const token = localStorage.getItem('accessToken');
+    const { isAuthenticated, user, initialized } = get();
 
-    return !!token && get().isAuthenticated;
+    // 如果尚未初始化，开始初始化过程
+    if (!initialized) {
+      get().initialize();
+    }
+
+    // 如果有token但没有用户信息，尝试刷新用户
+    if (token && !user && !get().isLoading) {
+      get().refreshUser();
+    }
+
+    return !!token && isAuthenticated;
   },
 
   login: async (credentials) => {
@@ -53,7 +105,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       localStorage.setItem('refreshToken', refreshToken);
 
       // 设置用户信息和认证状态
-      set({ user, isLoading: false, isAuthenticated: true });
+      set({ user, isLoading: false, isAuthenticated: true, initialized: true });
 
       // 获取重定向 URL
       const params = new URLSearchParams(window.location.search);
@@ -105,7 +157,12 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
 
-      set({ user: userData, isLoading: false, isAuthenticated: true });
+      set({
+        user: userData,
+        isLoading: false,
+        isAuthenticated: true,
+        initialized: true,
+      });
       window.location.href = '/';
     } catch (error) {
       set({ isLoading: false, isAuthenticated: false });
@@ -129,11 +186,15 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       set({ user: response, isAuthenticated: true });
     } catch (error) {
       console.error('Failed to refresh user:', error);
-      set({ isAuthenticated: false });
+      // 刷新失败时清除令牌，避免无限尝试
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      set({ isAuthenticated: false, user: null });
     }
   },
+
   getUser: () => {
-    if (get().isAuthenticated) {
+    if (get().isAuthenticated && get().user) {
       return get().user;
     } else {
       if (get().isLoading) {
