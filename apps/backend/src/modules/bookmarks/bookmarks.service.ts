@@ -7,7 +7,7 @@ export class BookmarksService {
 
   /**
    * Retrieves all bookmarks for a specific user.
-   * 
+   *
    * @param userId - The ID of the user whose bookmarks are being retrieved.
    * @returns A list of bookmarked tweets, including details such as likes, retweets, and comments count.
    */
@@ -45,7 +45,7 @@ export class BookmarksService {
 
   /**
    * Adds a new bookmark for a given tweet by a specific user.
-   * 
+   *
    * @param userId - The ID of the user who is bookmarking the tweet.
    * @param tweetId - The ID of the tweet to be bookmarked.
    * @throws NotFoundException if the tweet does not exist.
@@ -70,7 +70,7 @@ export class BookmarksService {
 
   /**
    * Removes a bookmark for a specific tweet by a user.
-   * 
+   *
    * @param userId - The ID of the user removing the bookmark.
    * @param tweetId - The ID of the tweet being unbookmarked.
    * @returns The deleted bookmark record.

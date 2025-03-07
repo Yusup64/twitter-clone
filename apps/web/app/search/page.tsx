@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
-import { SearchClient } from './SearchClient';
 import { Metadata } from 'next';
+
+import { SearchClient } from './SearchClient';
 
 export const metadata: Metadata = {
   title: 'Search | Twitter Clone',

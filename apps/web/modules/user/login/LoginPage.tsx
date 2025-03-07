@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Form,
   Input,
@@ -20,8 +20,16 @@ const LoginPage = () => {
   const [errors, setErrors] = useState<any>({});
   const [submitted, setSubmitted] = useState<any>(null);
   const { login, user } = useAuthStore();
-
   const router = useRouter();
+
+  // 将useEffect放在组件顶层，符合React Hook规则
+  useEffect(() => {
+    // 如果用户已登录，重定向到个人资料页面
+    if (user) {
+      router.push('/user/profile');
+    }
+  }, [user, router]);
+
   const toggleVisibility = () => {
     setIsVisible((prev) => !prev);
   };
@@ -52,11 +60,13 @@ const LoginPage = () => {
     });
   };
 
-  // if user is already logged in, redirect to profile page
+  // 如果用户已登录，显示加载中
   if (user) {
-    router.push('/user/profile');
-
-    return <></>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
   }
 
   return (
@@ -136,7 +146,7 @@ const LoginPage = () => {
 
         {/* Sign Up Link */}
         <p className="text-center text-sm">
-          Do you haven’t an account?{' '}
+          Do you haven&apos;t an account?{' '}
           <Link color="primary" href="/auth/register">
             Sign Up
           </Link>

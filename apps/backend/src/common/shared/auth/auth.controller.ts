@@ -42,10 +42,10 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
-  @IsPublic()
   @Post('login')
   @ApiCreatedResponse({ type: LoginDto })
   @HttpCode(HttpStatus.OK)
+  @IsPublic()
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }

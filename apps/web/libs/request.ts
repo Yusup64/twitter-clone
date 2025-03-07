@@ -140,6 +140,16 @@ class Request {
 
       if (!refreshTokenValue) return null;
 
+      // 防止频繁刷新token
+      const lastRefreshTime = localStorage.getItem('lastTokenRefreshTime');
+      const now = Date.now();
+
+      if (lastRefreshTime && now - parseInt(lastRefreshTime) < 10000) {
+        // 10秒内不重复刷新
+        return localStorage.getItem('accessToken');
+      }
+
+      localStorage.setItem('lastTokenRefreshTime', now.toString());
       const { accessToken } = (await refreshToken(refreshTokenValue)) as any;
 
       localStorage.setItem('accessToken', accessToken);

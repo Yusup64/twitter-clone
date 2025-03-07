@@ -1,4 +1,4 @@
-import request from "@/libs/request";
+import request from '@/libs/request';
 
 export const changePassword = async (data: {
   currentPassword: string;
