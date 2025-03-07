@@ -111,116 +111,179 @@ export class TweetsService {
 
   async findAll(query: any) {
     const { page = 1, limit = 10, userId } = query;
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * Number(limit);
 
-    // 从数据库获取最新推文
-    const tweets = await this.prisma.tweet.findMany({
-      skip,
-      take: Number(limit),
-      orderBy: {
-        createdAt: 'desc',
-      },
-      where: {
-        userId: userId,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            profilePhoto: true,
-          },
+    try {
+      const tweets = await this.prisma.tweet.findMany({
+        take: Number(limit),
+        skip: skip,
+        orderBy: {
+          createdAt: 'desc',
         },
-        hashtags: {
-          include: {
-            hashtag: true,
+        include: {
+          user: true,
+          _count: {
+            select: {
+              likes: true,
+              retweets: true,
+              comments: true,
+            },
           },
-        },
-        poll: {
-          include: {
-            options: {
-              include: {
-                _count: {
-                  select: { votes: true },
+          poll: {
+            include: {
+              options: {
+                include: {
+                  _count: {
+                    select: {
+                      votes: true,
+                    },
+                  },
                 },
               },
             },
           },
         },
-        _count: {
-          select: {
-            likes: true,
-            retweets: true,
-            comments: true,
-          },
-        },
-      },
-    });
+      });
 
-    return tweets;
+      // 如果提供了用户ID，检查用户是否喜欢或书签了每条推文
+      if (userId) {
+        const tweetsWithUserState = await Promise.all(
+          tweets.map(async (tweet) => {
+            // 检查用户是否喜欢此推文
+            const isLiked = await this.prisma.like.findUnique({
+              where: {
+                userId_tweetId: {
+                  userId,
+                  tweetId: tweet.id,
+                },
+              },
+            });
+
+            // 检查用户是否添加书签
+            const isBookmarked = await this.prisma.bookmark.findUnique({
+              where: {
+                userId_tweetId: {
+                  userId,
+                  tweetId: tweet.id,
+                },
+              },
+            });
+
+            // 检查用户是否转发
+            const isRetweeted = await this.prisma.retweet.findUnique({
+              where: {
+                userId_tweetId: {
+                  userId,
+                  tweetId: tweet.id,
+                },
+              },
+            });
+
+            return {
+              ...tweet,
+              isLiked: !!isLiked,
+              isBookmarked: !!isBookmarked,
+              isRetweeted: !!isRetweeted,
+            };
+          })
+        );
+
+        return tweetsWithUserState;
+      }
+
+      return tweets;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
-  async findOne(id: string) {
-    // 尝试从缓存获取
-    const cachedTweet = await this.redisService.getTweet(id);
-
-    if (cachedTweet) {
-      this.logger.log(`从缓存获取推文: ${id}`);
-      return cachedTweet;
-    }
-
-    // 缓存未命中，从数据库获取
-    const tweet = await this.prisma.tweet.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            profilePhoto: true,
+  async findOne(id: string, userId?: string) {
+    try {
+      const tweet = await this.prisma.tweet.findUnique({
+        where: { id },
+        include: {
+          user: true,
+          _count: {
+            select: {
+              likes: true,
+              retweets: true,
+              comments: true,
+            },
           },
-        },
-        hashtags: {
-          include: {
-            hashtag: true,
+          comments: {
+            include: {
+              user: true,
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
           },
-        },
-        _count: {
-          select: {
-            likes: true,
-            retweets: true,
-            comments: true,
-          },
-        },
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true,
-                displayName: true,
-                profilePhoto: true,
+          poll: {
+            include: {
+              options: {
+                include: {
+                  _count: {
+                    select: {
+                      votes: true,
+                    },
+                  },
+                },
               },
             },
           },
-          orderBy: {
-            createdAt: 'desc',
-          },
         },
-      },
-    });
+      });
 
-    if (!tweet) {
-      throw new NotFoundException('Tweet not found');
+      if (!tweet) {
+        throw new NotFoundException('Tweet not found');
+      }
+
+      // 如果提供了用户ID，检查用户是否喜欢、转发或添加书签
+      if (userId) {
+        // 检查用户是否喜欢此推文
+        const isLiked = await this.prisma.like.findUnique({
+          where: {
+            userId_tweetId: {
+              userId,
+              tweetId: tweet.id,
+            },
+          },
+        });
+
+        // 检查用户是否添加书签
+        const isBookmarked = await this.prisma.bookmark.findUnique({
+          where: {
+            userId_tweetId: {
+              userId,
+              tweetId: tweet.id,
+            },
+          },
+        });
+
+        // 检查用户是否转发
+        const isRetweeted = await this.prisma.retweet.findUnique({
+          where: {
+            userId_tweetId: {
+              userId,
+              tweetId: tweet.id,
+            },
+          },
+        });
+
+        return {
+          ...tweet,
+          isLiked: !!isLiked,
+          isBookmarked: !!isBookmarked,
+          isRetweeted: !!isRetweeted,
+        };
+      }
+
+      return tweet;
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
-
-    // 存入缓存
-    await this.redisService.setTweet(id, tweet);
-    this.logger.log(`推文已缓存: ${id}`);
-
-    return tweet;
   }
 
   async update(userId: string, id: string, updateTweetDto: UpdateTweetDto) {

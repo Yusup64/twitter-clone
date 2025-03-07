@@ -52,9 +52,11 @@ export const TweetCard: React.FC<TweetCardProps> = ({
   isBookmarked = false,
 }) => {
   const router = useRouter();
-  const [isLiked, setIsLiked] = useState(false);
-  const [isRetweeted, setIsRetweeted] = useState(false);
-  const [bookmarked, setBookmarked] = useState(isBookmarked);
+  const [isLiked, setIsLiked] = useState(tweet.isLiked || false);
+  const [isRetweeted, setIsRetweeted] = useState(tweet.isRetweeted || false);
+  const [bookmarked, setBookmarked] = useState(
+    tweet.isBookmarked || isBookmarked,
+  );
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isImagePreviewOpen,
@@ -66,23 +68,45 @@ export const TweetCard: React.FC<TweetCardProps> = ({
 
   // 在组件挂载时设置初始书签状态和检查当前状态
   useEffect(() => {
-    setBookmarked(isBookmarked);
+    // 如果API已经提供了书签状态，优先使用
+    if (tweet.isBookmarked !== undefined) {
+      setBookmarked(tweet.isBookmarked);
+    } else {
+      setBookmarked(isBookmarked);
 
-    // 只在未提供初始书签状态时才进行检查
-    if (isBookmarked === false && user) {
-      const checkIsBookmarked = async () => {
-        try {
-          const isBookmarked = await checkBookmarked(tweet.id);
+      // 只在未提供初始书签状态且API未返回状态时才进行检查
+      if (!isBookmarked && tweet.isBookmarked === undefined && user) {
+        const checkIsBookmarked = async () => {
+          try {
+            const isBookmarked = await checkBookmarked(tweet.id);
 
-          setBookmarked(isBookmarked);
-        } catch (error) {
-          console.error('检查书签状态失败', error);
-        }
-      };
+            setBookmarked(isBookmarked);
+          } catch (error) {
+            console.error('Failed to check bookmark status:', error);
+          }
+        };
 
-      checkIsBookmarked();
+        checkIsBookmarked();
+      }
     }
-  }, [isBookmarked, tweet.id, user]);
+
+    // 如果API已经提供了点赞状态，优先使用
+    if (tweet.isLiked !== undefined) {
+      setIsLiked(tweet.isLiked);
+    }
+
+    // 如果API已经提供了转发状态，优先使用
+    if (tweet.isRetweeted !== undefined) {
+      setIsRetweeted(tweet.isRetweeted);
+    }
+  }, [
+    isBookmarked,
+    tweet.id,
+    user,
+    tweet.isBookmarked,
+    tweet.isLiked,
+    tweet.isRetweeted,
+  ]);
 
   // 格式化推文内容，高亮标签和提及
   const formatContent = (content: string) => {
@@ -163,16 +187,16 @@ export const TweetCard: React.FC<TweetCardProps> = ({
       if (bookmarked) {
         await removeBookmark(tweet.id);
         addToast({
-          title: '已移除书签',
-          description: '已从您的书签中移除此推文',
+          title: 'Removed from bookmarks',
+          description: 'This tweet has been removed from your bookmarks',
           color: 'default',
           timeout: 3000,
         });
       } else {
         await addBookmark(tweet.id);
         addToast({
-          title: '已添加书签',
-          description: '已将此推文添加到您的书签',
+          title: 'Added to bookmarks',
+          description: 'This tweet has been added to your bookmarks',
           color: 'success',
           timeout: 3000,
         });
@@ -180,10 +204,10 @@ export const TweetCard: React.FC<TweetCardProps> = ({
       setBookmarked(!bookmarked);
       onSuccess();
     } catch (error) {
-      console.error('书签操作失败:', error);
+      console.error('Bookmark operation failed:', error);
       addToast({
-        title: '操作失败',
-        description: '书签操作失败，请稍后重试',
+        title: 'Operation failed',
+        description: 'Bookmark operation failed, please try again later',
         color: 'danger',
         timeout: 3000,
       });
@@ -391,9 +415,9 @@ export const TweetCard: React.FC<TweetCardProps> = ({
             } data-[hover]:bg-default-100`}
             radius="full"
             variant="light"
-            onClick={handleBookmark}
+            onPress={handleBookmark}
           >
-            {bookmarked ? (
+            {bookmarked || tweet.isBookmarked ? (
               <BookmarkCheck className="w-5 h-5" fill="currentColor" />
             ) : (
               <Bookmark className="w-5 h-5" />

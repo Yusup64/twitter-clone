@@ -21,18 +21,24 @@ export default function BookmarksPage() {
     try {
       const response = await getBookmarks();
 
-      // 处理API返回的数据，判断是否有data字段
+      //  handle the response data, check if there is a data field
       const bookmarkedTweets = response.data || response;
 
-      // 确保返回的是数组
+      //  ensure the response is an array
       if (Array.isArray(bookmarkedTweets)) {
-        setTweets(bookmarkedTweets);
+        //  add the bookmark status to all tweets
+        const tweetsWithBookmarkStatus = bookmarkedTweets.map((tweet) => ({
+          ...tweet,
+          isBookmarked: true, // the tweets in the bookmark page are always bookmarked
+        }));
+
+        setTweets(tweetsWithBookmarkStatus);
       } else {
         console.error('Invalid bookmark data format:', bookmarkedTweets);
         setTweets([]);
       }
     } catch (error) {
-      console.error('获取书签失败:', error);
+      console.error('Failed to fetch bookmarks:', error);
       setTweets([]);
     } finally {
       setIsLoading(false);
@@ -43,8 +49,10 @@ export default function BookmarksPage() {
     <AppLayout>
       <div className="max-w-2xl mx-auto">
         <div className="sticky top-0 bg-background z-10 p-4 border-b border-divider">
-          <h1 className="text-xl font-bold">书签</h1>
-          <p className="text-sm text-default-500">保存和收藏的推文</p>
+          <h1 className="text-xl font-bold">Bookmarks</h1>
+          <p className="text-sm text-default-500">
+            Saved and bookmarked tweets
+          </p>
         </div>
 
         {isLoading ? (
@@ -68,10 +76,11 @@ export default function BookmarksPage() {
                   <Bookmark className="w-12 h-12 text-default-300" />
                 </div>
                 <h3 className="text-xl font-medium mb-2">
-                  您还没有添加任何书签
+                  You haven&apos;t added any bookmarks yet
                 </h3>
                 <p className="text-default-500">
-                  当您在浏览时发现喜欢的推文，点击书签图标将其保存到这里
+                  When you find a tweet you like, click the bookmark icon to
+                  save it here
                 </p>
               </div>
             )}

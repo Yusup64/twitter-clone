@@ -20,7 +20,7 @@ A comprehensive Twitter/X clone built with modern web technologies. This applica
 - **Language**: TypeScript
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: JWT-based authentication with Passport
-- **API Documentation**: Swagger
+- **API Documentation**: Swagger (accessible at http://localhost:8080/api)
 - **Real-time Communication**: Polling with AJAX for updates
 - **Caching**: Redis for caching frequently accessed data like tweets and user profiles
 - **File Storage**: Cloudinary for media storage (images, videos)
@@ -32,7 +32,7 @@ A comprehensive Twitter/X clone built with modern web technologies. This applica
 - **Package Manager**: pnpm for efficient dependency management
 - **Linting & Formatting**: ESLint and Prettier
 - **Version Control**: Git
-- **Containerization**: Docker support (planned)
+- **Containerization**: Docker support for simplified deployment and consistent environments
 
 ## Key Features
 
@@ -137,6 +137,20 @@ The application uses Polling with AJAX for real-time features:
 - Real-time messaging with typing indicators and online status
 - Instant poll results updates
 
+## API Documentation
+
+The application provides comprehensive API documentation using Swagger. Once the application is running, you can access the interactive API documentation at:
+
+```
+http://localhost:8080/api
+```
+
+This documentation allows you to:
+- Explore all available API endpoints
+- Test API calls directly from the browser
+- View request/response schemas and data models
+- Understand authentication requirements for protected endpoints
+
 ## Getting Started
 
 ### Prerequisites
@@ -190,6 +204,59 @@ pnpm db:push
 ```bash
 pnpm dev
 ```
+
+## Deployment with Docker
+
+This application can be deployed using Docker for a simplified setup process and consistent environment across different machines. The repository includes a fully configured Docker setup for both development and production environments.
+
+### Prerequisites for Docker Deployment
+
+- Docker and Docker Compose installed on your system
+- Basic knowledge of Docker concepts
+
+### Deploying with Docker Compose
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/Yusup64/twitter-clone.git
+cd twitter-clone
+```
+
+2. Build and start the containers
+
+```bash
+docker-compose up -d
+```
+
+This will set up:
+- PostgreSQL database
+- Redis for caching
+- Backend API service (NestJS)
+- Frontend application (Next.js)
+
+3. Access the application
+
+- Frontend: http://localhost:9000
+- Backend API: http://localhost:8080
+- API Documentation: http://localhost:8080/api
+
+### Docker Configuration
+
+The Docker setup includes:
+- Multi-stage builds for efficient image sizes
+- Volume mapping for persistent database storage
+- Health checks to ensure service dependencies are met
+- Environment variable configuration
+- Network isolation for security
+
+### Production Considerations
+
+For production deployments, consider:
+- Setting appropriate environment variables
+- Configuring a reverse proxy (like Nginx)
+- Implementing SSL/TLS for secure communication
+- Setting up proper logging and monitoring
 
 ## License
 

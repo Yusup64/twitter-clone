@@ -20,6 +20,9 @@ export interface Tweet {
     retweets: true;
     comments: true;
   };
+  isLiked?: boolean;
+  isRetweeted?: boolean;
+  isBookmarked?: boolean;
 }
 
 export interface Poll {
