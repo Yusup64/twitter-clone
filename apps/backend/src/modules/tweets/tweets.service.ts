@@ -806,6 +806,10 @@ export class TweetsService {
     // try to get from cache
     const cacheKey = `${CachePrefix.SEARCH}tweets:${query}:${limit}`;
     const cachedResults = await this.redisService.get(cacheKey);
+    console.log(
+      '🚀 ~ TweetsService ~ searchTweets ~ cachedResults:',
+      cachedResults,
+    );
 
     if (cachedResults) {
       this.logger.log(`get search results from cache: ${cacheKey}`);

@@ -15,17 +15,17 @@ interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { user } = useAuthStore();
 
-  // 初始化WebSocket连接和通知监听
+  // initialize the WebSocket connection and notification listening
   useEffect(() => {
     if (user) {
-      // 初始化WebSocket连接
+      // initialize the WebSocket connection
       initializeSocket();
 
-      // 订阅通知
+      // subscribe to notifications
       const unsubscribe = subscribeToNotifications((notification) => {
-        // 显示通知提示
+        // show the notification toast
         addToast({
-          title: '新通知',
+          title: 'New notification',
           description: getNotificationText(notification),
           color: 'primary',
           timeout: 5000,
@@ -39,28 +39,28 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     }
   }, [user]);
 
-  // 获取通知文本
+  // get the notification text
   const getNotificationText = (notification: any) => {
     const senderName =
       notification.sender.displayName || notification.sender.username;
 
     switch (notification.type) {
       case 'LIKE':
-        return `${senderName} 喜欢了你的推文`;
+        return `${senderName} liked your tweet`;
       case 'COMMENT':
-        return `${senderName} 评论了你的推文`;
+        return `${senderName} commented on your tweet`;
       case 'RETWEET':
-        return `${senderName} 转发了你的推文`;
+        return `${senderName} retweeted your tweet`;
       case 'FOLLOW':
-        return `${senderName} 关注了你`;
+        return `${senderName} followed you`;
       case 'MENTION':
-        return `${senderName} 在推文中提到了你`;
+        return `${senderName} mentioned you in a tweet`;
       default:
-        return '你有一条新通知';
+        return 'You have a new notification';
     }
   };
 
-  // 获取通知链接
+  // get the notification link
   const getNotificationLink = (notification: any) => {
     switch (notification.type) {
       case 'LIKE':

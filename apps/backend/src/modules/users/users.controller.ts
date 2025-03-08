@@ -11,7 +11,7 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get(':username')
+  @Get('/getByUsername/:username')
   @ApiOperation({ summary: 'Get user profile' })
   @IsPublic()
   async getUserProfile(@Param('username') username: string, @UserAuth() user) {

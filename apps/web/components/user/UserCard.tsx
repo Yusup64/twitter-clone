@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardBody, Avatar, Button } from '@heroui/react';
 
@@ -20,7 +20,8 @@ interface UserCardProps {
 }
 
 export const UserCard: React.FC<UserCardProps> = ({ user, onSuccess }) => {
-  const { user: currentUser } = useAuthStore();
+  const { user: currentUser, initialize } = useAuthStore();
+
   const [isFollowing, setIsFollowing] = useState(user.isFollowing || false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,6 +45,10 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onSuccess }) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    initialize();
+  }, []);
 
   return (
     <Card className="w-full">

@@ -1,6 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  Suspense,
+  useCallback,
+  useRef,
+} from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Input, Tabs, Tab, Card, CardBody, Spinner } from '@heroui/react';
 import { Search } from 'lucide-react';
@@ -20,7 +26,7 @@ interface _SearchResult<T> {
   [key: string]: any;
 }
 
-// 使用useSearchParams的组件
+// the component that uses useSearchParams
 function SearchParamsReader({
   onQueryChange,
 }: {
@@ -29,12 +35,12 @@ function SearchParamsReader({
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
 
-  // 当URL参数变化时通知父组件
+  // notify the parent component when the URL parameters change
   useEffect(() => {
     onQueryChange(query);
   }, [query, onQueryChange]);
 
-  return null; // 这个组件不渲染任何内容，只是读取URL参数
+  return null; // this component does not render any content, only reads the URL parameters
 }
 
 export function SearchClient() {
@@ -47,112 +53,204 @@ export function SearchClient() {
   const [hasError, setHasError] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // define a performSearch function that does not depend on isLoading to avoid circular dependency
+  const performSearch = useCallback(
+    async (searchQuery: string) => {
+      if (!searchQuery.trim()) return;
+
+      // prevent triggering again when loading
+      if (isLoading) return;
+
+      setIsLoading(true);
+      setHasError(false);
+
+      try {
+        // try to use the unified search interface - only use it when the "all" tab is selected
+        if (activeTab === 'all') {
+          try {
+            const searchResult = await search(searchQuery);
+
+            if (searchResult) {
+              if (Array.isArray(searchResult.users)) {
+                setUsers(searchResult.users);
+              }
+              if (Array.isArray(searchResult.tweets)) {
+                setTweets(searchResult.tweets);
+              }
+              if (Array.isArray(searchResult.hashtags)) {
+                setHashtags(searchResult.hashtags);
+              }
+
+              setIsLoading(false); // end loading state early
+
+              return; // if the unified search is successful, return immediately
+            }
+          } catch (error) {
+            console.log(
+              'Unified search interface failed, trying separate search interface',
+              error,
+            );
+          }
+        }
+
+        // use exact match, ensure only search the content of the current active tab
+        switch (activeTab) {
+          case 'users':
+            try {
+              // search users
+              const usersResult = await searchUsers({ query: searchQuery });
+
+              if (usersResult && usersResult.users) {
+                setUsers(usersResult.users as any[]);
+              } else if (Array.isArray(usersResult)) {
+                setUsers(usersResult);
+              } else {
+                setUsers([]);
+              }
+              // clear other results
+              setTweets([]);
+              setHashtags([]);
+            } catch (error) {
+              console.error('User search failed:', error);
+              setUsers([]);
+            }
+            break;
+
+          case 'tweets':
+            try {
+              // search tweets
+              const tweetsResult = await searchTweets({ query: searchQuery });
+
+              if (tweetsResult) {
+                // The backend returns the tweets array directly, not wrapped in an object
+                setTweets(Array.isArray(tweetsResult) ? tweetsResult : []);
+              } else {
+                setTweets([]);
+              }
+              // 清空其他结果
+              setUsers([]);
+              setHashtags([]);
+            } catch (error) {
+              console.error('Tweet search failed:', error);
+              setTweets([]);
+            }
+            break;
+
+          case 'hashtags':
+            try {
+              // search hashtags
+              const hashtagsResult = await searchHashtags(searchQuery, 10);
+
+              if (hashtagsResult && hashtagsResult.hashtags) {
+                setHashtags(hashtagsResult.hashtags as any[]);
+              } else if (Array.isArray(hashtagsResult)) {
+                setHashtags(hashtagsResult);
+              } else {
+                setHashtags([]);
+              }
+              // clear other results
+              setUsers([]);
+              setTweets([]);
+            } catch (error) {
+              console.error('Hashtag search failed:', error);
+              setHashtags([]);
+            }
+            break;
+
+          case 'all':
+            // if the unified search failed, search all types separately
+            try {
+              // search users
+              const usersResult = await searchUsers({ query: searchQuery });
+
+              if (usersResult && usersResult.users) {
+                setUsers(usersResult.users as any[]);
+              } else if (Array.isArray(usersResult)) {
+                setUsers(usersResult);
+              } else {
+                setUsers([]);
+              }
+            } catch (error) {
+              console.error('User search failed:', error);
+              setUsers([]);
+            }
+
+            try {
+              // search tweets
+              const tweetsResult = await searchTweets({ query: searchQuery });
+
+              if (tweetsResult) {
+                setTweets(Array.isArray(tweetsResult) ? tweetsResult : []);
+              } else {
+                setTweets([]);
+              }
+            } catch (error) {
+              console.error('Tweet search failed:', error);
+              setTweets([]);
+            }
+
+            try {
+              // 搜索标签
+              const hashtagsResult = await searchHashtags(searchQuery, 10);
+
+              if (hashtagsResult && hashtagsResult.hashtags) {
+                setHashtags(hashtagsResult.hashtags as any[]);
+              } else if (Array.isArray(hashtagsResult)) {
+                setHashtags(hashtagsResult);
+              } else {
+                setHashtags([]);
+              }
+            } catch (error) {
+              console.error('Hashtag search failed:', error);
+              setHashtags([]);
+            }
+            break;
+        }
+      } catch (error) {
+        console.error('Search failed:', error);
+        setHasError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [activeTab], // 只依赖activeTab，不依赖isLoading
+  );
+
   // 使用useCallback包装handleQueryChange以避免无限循环
   const handleQueryChange = useCallback(
     (newQuery: string) => {
-      setQuery(newQuery);
-      if (newQuery && isInitialLoad) {
-        setIsInitialLoad(false);
-        performSearch(newQuery);
+      // 只在查询真正变化时才更新状态和触发搜索
+      if (newQuery !== query) {
+        setQuery(newQuery);
+        // 只在初始加载时直接触发搜索，否则会由useEffect处理
+        if (newQuery && isInitialLoad) {
+          setIsInitialLoad(false);
+          performSearch(newQuery);
+        }
       }
     },
-    [isInitialLoad],
+    [isInitialLoad, performSearch, query],
   );
 
-  // 执行搜索
-  const performSearch = async (searchQuery: string) => {
-    if (!searchQuery.trim()) return;
+  // 使用useRef创建一个标志，表示是否应该执行搜索
+  const shouldSearchRef = useRef(false);
 
-    setIsLoading(true);
-    setHasError(false);
-
-    try {
-      // 尝试使用统一搜索接口
-      try {
-        const searchResult = await search(searchQuery);
-
-        if (searchResult) {
-          if (Array.isArray(searchResult.users)) {
-            setUsers(searchResult.users);
-          }
-          if (Array.isArray(searchResult.tweets)) {
-            setTweets(searchResult.tweets);
-          }
-
-          return; // 如果统一搜索成功，直接返回
-        }
-      } catch (error) {
-        console.log(
-          'Unified search interface failed, trying separate search interface',
-          error,
-        );
-      }
-
-      // 根据当前活动标签执行相应的搜索
-      if (activeTab === 'users' || activeTab === 'all') {
-        try {
-          // 修正搜索用户的API调用，直接使用query参数而不是对象
-          const usersResult = await searchUsers({ query: searchQuery });
-
-          if (usersResult && usersResult.users) {
-            setUsers(usersResult.users as any[]);
-          } else if (Array.isArray(usersResult)) {
-            setUsers(usersResult);
-          } else {
-            setUsers([]);
-          }
-        } catch (error) {
-          console.error('User search failed:', error);
-          setUsers([]);
-        }
-      }
-
-      if (activeTab === 'tweets' || activeTab === 'all') {
-        try {
-          const tweetsResult = await searchTweets({ query: searchQuery });
-
-          if (tweetsResult) {
-            // The backend returns the tweets array directly, not wrapped in an object
-            setTweets(Array.isArray(tweetsResult) ? tweetsResult : []);
-          } else {
-            setTweets([]);
-          }
-        } catch (error) {
-          console.error('Tweet search failed:', error);
-          setTweets([]);
-        }
-      }
-
-      if (activeTab === 'hashtags' || activeTab === 'all') {
-        try {
-          const hashtagsResult = await searchHashtags(searchQuery);
-
-          if (hashtagsResult && hashtagsResult.hashtags) {
-            setHashtags(hashtagsResult.hashtags as any[]);
-          } else if (Array.isArray(hashtagsResult)) {
-            setHashtags(hashtagsResult);
-          } else {
-            setHashtags([]);
-          }
-        } catch (error) {
-          console.error('Hashtag search failed:', error);
-          setHashtags([]);
-        }
-      }
-    } catch (error) {
-      console.error('Search failed:', error);
-      setHasError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // 当标签变化时执行搜索，但只在有查询词时执行
+  // 监听查询和标签变化，设置shouldSearch标志
   useEffect(() => {
+    // 如果不是初始加载且有查询，则标记应该搜索
     if (query && !isInitialLoad) {
+      shouldSearchRef.current = true;
+    }
+  }, [query, activeTab, isInitialLoad]);
+
+  // 单独的useEffect用于执行搜索，只依赖isLoading
+  useEffect(() => {
+    // 只有当不在加载中且应该搜索时执行
+    if (!isLoading && shouldSearchRef.current) {
+      shouldSearchRef.current = false; // 重置标志
       performSearch(query);
     }
-  }, [activeTab, query, isInitialLoad]);
+  }, [isLoading, performSearch, query]);
 
   // 处理搜索表单提交
   const handleSearch = (e: any) => {
@@ -161,14 +259,19 @@ export function SearchClient() {
     const searchQuery = data.q as string;
 
     if (searchQuery) {
-      setQuery(searchQuery);
-      performSearch(searchQuery);
+      // 只有在查询与当前查询不同时才更新状态和执行搜索
+      if (searchQuery !== query) {
+        setQuery(searchQuery);
+        setIsInitialLoad(false);
+        // 不直接调用performSearch，而是通过标志和useEffect触发
+        shouldSearchRef.current = true;
 
-      // 更新URL，但不刷新页面
-      const url = new URL(window.location.href);
+        // 更新URL，但不刷新页面
+        const url = new URL(window.location.href);
 
-      url.searchParams.set('q', searchQuery);
-      window.history.pushState({}, '', url.toString());
+        url.searchParams.set('q', searchQuery);
+        window.history.pushState({}, '', url.toString());
+      }
     }
   };
 

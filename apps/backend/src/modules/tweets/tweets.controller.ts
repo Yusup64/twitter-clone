@@ -39,7 +39,7 @@ export class TweetsController {
     return this.tweetsService.findAll(query);
   }
 
-  @Get(':id')
+  @Get('/getById/:id')
   @ApiOperation({ summary: 'Get a tweet by id' })
   @IsPublic()
   findOne(@Param('id') id: string, @UserAuth('id') userId: string | null) {

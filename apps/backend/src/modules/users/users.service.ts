@@ -242,6 +242,7 @@ export class UsersService {
     const users = await this.prisma.user.findMany({
       where: {
         OR: [
+          { email: { contains: query, mode: 'insensitive' } },
           { username: { contains: query, mode: 'insensitive' } },
           { displayName: { contains: query, mode: 'insensitive' } },
         ],

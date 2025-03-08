@@ -8,7 +8,7 @@ export const getCurrentUser = async () => {
 };
 
 export const getUserByUsername = async (username: string) => {
-  return request.get<User>(`${PREFIX}/${username}`);
+  return request.get<User>(`${PREFIX}/getByUsername/${username}`);
 };
 
 export const updateProfile = async (data: any) => {

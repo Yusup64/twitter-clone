@@ -64,14 +64,6 @@ export const getTweets = async (params?: any) => {
   return request.get(`${PREFIX}`, params);
 };
 
-/**
- * 获取单个推文详情
- * 后端会自动检测当前登录用户并返回点赞、转发和书签状态
- */
-export const getTweet = (id: string) => {
-  return request.get<Tweet>(`/tweets/${id}`);
-};
-
 export const likeTweet = async (id: string) => {
   return request.post(`${PREFIX}/${id}/like`);
 };
@@ -115,5 +107,5 @@ export const getTweetsByHashtag = async (tag: string, params?: any) => {
 };
 
 export const getTweetById = async (id: string) => {
-  return request.get(`/tweets/${id}`);
+  return request.get<Tweet>(`/tweets/getById/${id}`);
 };

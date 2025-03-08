@@ -8,7 +8,7 @@ interface SearchResponse {
 }
 
 export const search = (query?: string) => {
-  return request.get<SearchResponse>('/search', {
-    q: query,
+  return request.get<SearchResponse>('/users/search', {
+    query: query,
   });
 };

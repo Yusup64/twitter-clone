@@ -28,7 +28,7 @@ export default function ProfilePage() {
   const params = useParams();
   const username = params.username as string;
 
-  const { user: currentUser } = useAuthStore();
+  const { user: currentUser, initialize } = useAuthStore();
   const [user, setUser] = useState<any>(null);
   const [tweets, setTweets] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +80,10 @@ export default function ProfilePage() {
     fetchUserData();
   }, [username]);
 
+  useEffect(() => {
+    initialize();
+  }, []);
+
   const handleFollow = async () => {
     if (!user) return;
 
@@ -92,7 +96,7 @@ export default function ProfilePage() {
           addToast({
             description: res.message as string,
             color: 'success',
-            duration: 3000,
+            timeout: 3000,
           });
         }
       } else {
@@ -102,7 +106,7 @@ export default function ProfilePage() {
           addToast({
             description: res.message as string,
             color: 'success',
-            duration: 3000,
+            timeout: 3000,
           });
         }
       }

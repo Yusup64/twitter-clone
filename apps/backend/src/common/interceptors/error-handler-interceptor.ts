@@ -47,10 +47,10 @@ export class ErrorHandlerInterceptors implements ExceptionFilter {
       err: message,
     };
 
-    // 获取请求头信息
+    // get the request headers
     const headers = request.headers;
 
-    // 只记录服务器错误的详细信息
+    // record the detailed information of server errors
     if (!exception.status || status >= 500) {
       this.logger.error({
         ...mesLog,
@@ -62,11 +62,11 @@ export class ErrorHandlerInterceptors implements ExceptionFilter {
       });
     }
 
-    // 返回错误响应
+    // return the error response
     if (status === HttpStatus.UNAUTHORIZED || status === HttpStatus.FORBIDDEN) {
       response.status(HttpStatus.OK).json(mesLog); // 401 和 403 错误返回 200 状态码
     } else if (status === HttpStatus.NOT_FOUND) {
-      response.status(HttpStatus.NOT_FOUND).json(mesLog); // 404 错误返回 200 状态码
+      response.status(HttpStatus.OK).json(mesLog); // 404 错误返回 200 状态码
     } else if (
       status === HttpStatus.MOVED_PERMANENTLY ||
       status === HttpStatus.TEMPORARY_REDIRECT

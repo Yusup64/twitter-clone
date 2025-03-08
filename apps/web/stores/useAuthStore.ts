@@ -62,7 +62,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   set: (state: Partial<AuthState>) => set(state),
 
   initialize: async () => {
-    // 防止重复初始化
+    // prevent duplicate initialization
     if (get().initialized) return;
 
     const storage = getLocalStorage();

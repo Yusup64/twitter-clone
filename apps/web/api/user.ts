@@ -33,7 +33,7 @@ export const verifyToken = async (body: any, config: any) => {
 const PREFIX = '/users';
 
 export const getUserProfile = async (username: string) => {
-  return request.get(`${PREFIX}/${username}`);
+  return request.get(`${PREFIX}/getByUsername/${username}`);
 };
 
 export const followUser = async (userId: string) => {
