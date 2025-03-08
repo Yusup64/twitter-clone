@@ -127,9 +127,9 @@ export class TweetsController {
   @IsPublic()
   async searchTweets(
     @Query('query') query: string,
-    @Query('limit') limit: number = 10,
+    @Query('limit') limit: string = '10',
   ) {
-    return this.tweetsService.searchTweets(query, limit);
+    return this.tweetsService.searchTweets(query, parseInt(limit));
   }
 
   @Get('hashtags/search')

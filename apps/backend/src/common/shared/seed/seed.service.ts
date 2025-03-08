@@ -39,7 +39,7 @@ export class SeedService implements OnModuleInit {
             displayName: `${firstName} ${lastName}`,
             bio: faker.person.bio(),
             profilePhoto: faker.image.avatar(),
-            coverPhoto: faker.image.urlLoremFlickr({ category: 'nature' }),
+            coverPhoto: `https://picsum.photos/200/300?${Math.random()}`,
             location: faker.location.city(),
             website: faker.internet.url(),
             verified: faker.datatype.boolean(),
@@ -61,7 +61,7 @@ export class SeedService implements OnModuleInit {
             mediaUrls: hasMedia
               ? Array.from({
                   length: faker.number.int({ min: 1, max: 4 }),
-                }).map(() => faker.image.urlLoremFlickr({ category: 'nature' }))
+                }).map(() => `https://picsum.photos/200/300?${Math.random()}`)
               : [],
             hasMedia,
           },

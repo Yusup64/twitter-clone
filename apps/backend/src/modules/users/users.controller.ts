@@ -65,9 +65,9 @@ export class UsersController {
   @IsPublic()
   async searchUsers(
     @Query('query') query: string,
-    @Query('limit') limit: number = 10,
+    @Query('limit') limit: string = '10',
   ) {
-    return this.usersService.searchUsers(query, limit);
+    return this.usersService.searchUsers(query, parseInt(limit));
   }
 
   @Get('suggested')

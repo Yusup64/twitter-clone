@@ -61,7 +61,7 @@ export default function ProfilePage() {
 
       setUser(userData);
 
-      setIsFollowing(userData.isFollowedByMe || false);
+      setIsFollowing((userData.isFollowedByMe as unknown as boolean) || false);
 
       // 获取用户的推文
       const tweetsData = (await getTweets({
