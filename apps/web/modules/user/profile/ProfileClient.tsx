@@ -9,6 +9,7 @@ import {
   Card,
   CardBody,
   Spinner,
+  Form,
 } from '@heroui/react';
 import { Camera, Save, Lock as LockIcon } from 'lucide-react';
 import { User } from 'database/types';
@@ -76,26 +77,25 @@ const ProfileClient = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('handleSubmit', formData);
     e.preventDefault();
-    if (validateForm()) {
-      showLoading();
-      try {
-        await updateUserProfile({
-          ...formData,
-          profilePhoto: formData.profilePhoto || '',
-        });
+    showLoading();
+    try {
+      await updateUserProfile({
+        ...formData,
+        profilePhoto: formData.profilePhoto || '',
+      });
 
-        addToast({
-          title: 'Profile updated',
-          description: 'Profile updated successfully',
-          color: 'success',
-          timeout: 2000,
-        });
-        hideLoading();
-      } catch (error) {
-        console.error('Failed to update profile:', error);
-        hideLoading();
-      }
+      addToast({
+        title: 'Profile updated',
+        description: 'Profile updated successfully',
+        color: 'success',
+        timeout: 2000,
+      });
+      hideLoading();
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      hideLoading();
     }
   };
 
@@ -187,7 +187,13 @@ const ProfileClient = () => {
 
       <Card className="mb-6 border border-divider/10" shadow="none">
         <CardBody>
-          <form onSubmit={handleSubmit}>
+          <Form
+            aria-label="Profile Form"
+            className="space-y-4 w-full block"
+            validationErrors={errors}
+            onReset={() => setErrors({})}
+            onSubmit={handleSubmit}
+          >
             <div className="flex flex-col items-center mb-6">
               <div className="relative group">
                 <Avatar
@@ -226,7 +232,7 @@ const ProfileClient = () => {
                 label="Display name"
                 name="displayName"
                 placeholder="Display name"
-                value={formData.displayName}
+                value={formData.displayName || ''}
                 onChange={handleChange}
               />
 
@@ -235,7 +241,7 @@ const ProfileClient = () => {
                 minRows={3}
                 name="bio"
                 placeholder="Introduce yourself..."
-                value={formData.bio}
+                value={formData.bio || ''}
                 onChange={handleChange}
               />
 
@@ -243,7 +249,7 @@ const ProfileClient = () => {
                 label="Location"
                 name="location"
                 placeholder="Location"
-                value={formData.location}
+                value={formData.location || ''}
                 onChange={handleChange}
               />
 
@@ -251,7 +257,7 @@ const ProfileClient = () => {
                 label="Website"
                 name="website"
                 placeholder="Website"
-                value={formData.website}
+                value={formData.website || ''}
                 onChange={handleChange}
               />
 
@@ -266,7 +272,7 @@ const ProfileClient = () => {
                 </Button>
               </div>
             </div>
-          </form>
+          </Form>
         </CardBody>
       </Card>
 
