@@ -81,7 +81,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                   {followers.map((follower) => (
                     <UserCard
                       key={follower.id}
-                      user={follower}
+                      user={follower.follower}
                       onSuccess={fetchFollowers}
                     />
                   ))}

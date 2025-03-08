@@ -23,10 +23,14 @@ export class UsersController {
   @IsPublic()
   getUserTweets(
     @Param('username') username: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
   ) {
-    return this.usersService.getUserTweets(username, page, limit);
+    return this.usersService.getUserTweets(
+      username,
+      parseInt(page),
+      parseInt(limit),
+    );
   }
 
   @Post(':id/follow')
