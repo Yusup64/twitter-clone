@@ -12,6 +12,7 @@
     "lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix"
   },
   "dependencies": {
+    "@firebase/messaging": "^0.12.17",
     "@heroui/react": "2.7.2",
     "@internationalized/date": "^3.7.0",
     "@react-aria/ssr": "3.9.7",
@@ -20,6 +21,7 @@
     "clsx": "2.1.1",
     "database": "workspace:*",
     "date-fns": "^4.1.0",
+    "firebase": "^11.4.0",
     "framer-motion": "11.18.2",
     "google": "link:next/font/google",
     "lucide-react": "^0.475.0",

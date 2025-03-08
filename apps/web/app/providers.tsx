@@ -8,9 +8,16 @@ import {
   ThemeProviderProps,
 } from 'next-themes';
 import { ToastProvider } from '@heroui/react';
+import dynamic from 'next/dynamic';
 
 import GlobalLoading from '@/components/GlobalLoading';
 import { LoadingProvider } from '@/contexts/LoadingContext';
+
+// 动态导入NotificationHandler组件，避免SSR问题
+const NotificationHandler = dynamic(
+  () => import('@/components/Notification/NotificationHandler'),
+  { ssr: false },
+);
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -35,6 +42,7 @@ export function Providers({ children }: ProvidersProps) {
           <ToastProvider placement="top-center" />
           <LoadingProvider>
             <GlobalLoading />
+            <NotificationHandler />
             {children}
           </LoadingProvider>
         </HeroUIProvider>

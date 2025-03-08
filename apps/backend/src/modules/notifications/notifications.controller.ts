@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Param,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UserAuth } from '@/src/common/decorators/user.decorator';
 import { JwtAuthGuard } from '@/src/common/guards/jwt-auth.guard';
@@ -12,8 +21,13 @@ export class NotificationsController {
 
   @Get()
   @ApiOperation({ summary: 'Get user notifications' })
-  getNotifications(@UserAuth() user, @Query() query) {
-    return this.notificationsService.getNotifications(user.id, query);
+  async getNotifications(
+    @Request() req,
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+  ) {
+    const userId = req.user.id;
+    return this.notificationsService.getNotifications(userId, +page, +limit);
   }
 
   @Post(':id/read')
@@ -24,13 +38,21 @@ export class NotificationsController {
 
   @Post('read-all')
   @ApiOperation({ summary: 'Mark all notifications as read' })
-  markAllAsRead(@UserAuth() user) {
-    return this.notificationsService.markAllAsRead(user.id);
+  async markAllAsRead(@Request() req) {
+    const userId = req.user.id;
+    return this.notificationsService.markAllAsRead(userId);
   }
 
-  @Get('unread-count')
+  @Get('count')
   @ApiOperation({ summary: 'Get unread notifications count' })
-  getUnreadCount(@UserAuth() user) {
-    return this.notificationsService.getUnreadCount(user.id);
+  async getUnreadCount(@Request() req) {
+    const userId = req.user.id;
+    return this.notificationsService.getUnreadCount(userId);
+  }
+
+  @Post('register-token')
+  async registerToken(@Request() req, @Body() body: { token: string }) {
+    const userId = req.user.id;
+    return this.notificationsService.registerFcmToken(userId, body.token);
   }
 }
