@@ -244,18 +244,18 @@ export const TweetCard: React.FC<TweetCardProps> = ({
         className="w-full mb-4 hover:bg-default-50 border border-divider/10"
         shadow="none"
       >
-        <CardHeader className="flex gap-4">
-          <Link href={`/${tweet.user.username}`}>
+        <CardHeader className="flex gap-4 relative z-0">
+          <Link className="cursor-pointer" href={`/${tweet.user.username}`}>
             <Avatar
               alt={tweet.user.username}
-              className="cursor-pointer"
+              className="cursor-pointer hover:opacity-80"
               src={tweet.user.profilePhoto || ''}
             />
           </Link>
           <div className="flex flex-1 justify-between items-start">
-            <Link className="cursor-pointer" href={`/tweet/${tweet.id}`}>
+            <Link className="cursor-pointer" href={`/${tweet.user.username}`}>
               <div className="flex flex-col">
-                <p className="text-md font-semibold">
+                <p className="text-md font-semibold hover:underline hover:text-primary">
                   {tweet.user.displayName || tweet.user.username}
                 </p>
                 <p className="text-small text-default-500">
@@ -286,7 +286,12 @@ export const TweetCard: React.FC<TweetCardProps> = ({
             )}
           </div>
         </CardHeader>
-        <CardBody className="p-4">
+        <CardBody
+          className="p-4 cursor-pointer"
+          onClick={() => {
+            router.push(`/tweet/${tweet.id}`);
+          }}
+        >
           {/* 使用dangerouslySetInnerHTML渲染格式化后的内容 */}
           <div
             dangerouslySetInnerHTML={{ __html: formatContent(tweet.content) }}

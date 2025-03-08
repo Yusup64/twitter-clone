@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import {
-  Tabs,
-  Tab,
   Spinner,
   Button,
   Avatar,
@@ -247,7 +245,7 @@ export default function ProfilePage() {
         </div>
 
         {/* 标签页 */}
-        <div className="mt-4 border-b border-divider">
+        {/* <div className="mt-4 border-b border-divider">
           <Tabs
             selectedKey={activeTab}
             onSelectionChange={(key) => setActiveTab(key as string)}
@@ -257,7 +255,7 @@ export default function ProfilePage() {
             <Tab key="media" title="Media" />
             <Tab key="likes" title="Likes" />
           </Tabs>
-        </div>
+        </div> */}
 
         {/* 推文列表 */}
         <div className="py-4">

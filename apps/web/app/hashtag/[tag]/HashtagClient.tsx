@@ -35,8 +35,6 @@ export function HashtagClient({ tag }: HashtagClientProps) {
         limit: 10,
       });
 
-      console.log('🚀 ~ fetchTweets ~ response:', response);
-
       if (pageNum === 1) {
         setTweets(response.tweets);
       } else {

@@ -15,7 +15,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get user profile' })
   @IsPublic()
   async getUserProfile(@Param('username') username: string, @UserAuth() user) {
-    return this.usersService.getUserProfile(username, user.id);
+    return this.usersService.getUserProfile(username, user?.id);
   }
 
   @Get(':username/tweets')

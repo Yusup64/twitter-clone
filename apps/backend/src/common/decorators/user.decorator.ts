@@ -6,7 +6,8 @@ export const UserAuth = createParamDecorator(
     const request = ctx.switchToHttp().getRequest();
     const token = request.headers.authorization?.split(' ')[1];
     if (!token) {
-      throw new Error('Authorization token not provided');
+      // throw new Error('Authorization token not provided');
+      return null;
     }
 
     try {
@@ -19,8 +20,9 @@ export const UserAuth = createParamDecorator(
 
       // Return the full decoded payload or a specific property if `data` is provided
       return data ? decoded[data as string] : decoded;
-    } catch (err) {
-      throw new Error(`Invalid token: ${err.message}`);
+    } catch (_err) {
+      // throw new Error(`Invalid token: ${err.message}`);
+      return null;
     }
   },
 );

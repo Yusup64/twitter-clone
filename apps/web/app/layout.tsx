@@ -5,6 +5,7 @@ import { Inter } from 'next/font/google';
 import { useEffect, useState } from 'react';
 import { LayoutGrid, X } from 'lucide-react';
 import { Button } from '@heroui/react';
+import { usePathname } from 'next/navigation';
 
 import { Providers } from './providers';
 
@@ -19,16 +20,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { getUser } = useAuthStore();
+  const { user, getUser } = useAuthStore();
+  const pathname = usePathname();
 
   // Check if the current route is an auth route
-  const isAuthPage =
-    typeof window !== 'undefined' &&
-    window.location.pathname.startsWith('/auth');
+  const isAuthPage = pathname.startsWith('/auth');
 
   useEffect(() => {
-    getUser();
-  }, []);
+    if (!user) {
+      getUser();
+    }
+  }, [pathname]);
 
   if (isAuthPage) {
     return (
