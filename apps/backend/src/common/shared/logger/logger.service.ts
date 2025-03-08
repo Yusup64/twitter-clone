@@ -78,7 +78,7 @@ export class LoggerService implements NestLoggerService {
       ? `${req.method} ${req.url} ${context.statusCode} ${context.duration || ''}`
       : `${req.method} ${req.url}`;
 
-    this.log(LogLevel.INFO, message, logData);
+    // this.log(LogLevel.INFO, message, logData);
   }
   /* 
   // 特殊方法：记录性能追踪

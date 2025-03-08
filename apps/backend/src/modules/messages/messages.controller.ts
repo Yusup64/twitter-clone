@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { MessagesService } from './messages.service';
@@ -147,5 +148,23 @@ export class MessagesController {
   @ApiBearerAuth('access-token')
   getUnreadCount(@UserAuth() user) {
     return this.messagesService.getUnreadCount(user.id);
+  }
+
+  // 添加活跃聊天状态管理接口
+  @Post('active-chat')
+  @UseGuards(JwtAuthGuard)
+  async setActiveChatStatus(
+    @Request() req,
+    @Body() data: { otherUserId: string; active: boolean },
+  ) {
+    const userId = req.user.id;
+
+    if (data.active) {
+      this.messagesService.setUserActiveChat(userId, data.otherUserId);
+      return { success: true, message: '已设置活跃聊天状态' };
+    } else {
+      this.messagesService.removeUserActiveChat(userId, data.otherUserId);
+      return { success: true, message: '已移除活跃聊天状态' };
+    }
   }
 }

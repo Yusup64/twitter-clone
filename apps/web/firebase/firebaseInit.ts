@@ -87,20 +87,44 @@ export const requestNotificationsPermission = async () => {
   }
 };
 
-// Handle foreground messages
+// 处理前台消息
 export const onMessageListener = () => {
   return new Promise((resolve) => {
     const messaging = getMessagingInstance();
 
     if (!messaging) {
+      console.warn('无法获取 Firebase Messaging 实例，消息监听器未初始化');
       resolve(null);
 
       return;
     }
 
-    onMessage(messaging, (payload) => {
-      console.log('Received foreground message:', payload);
-      resolve(payload);
-    });
+    try {
+      console.log('设置 Firebase 消息监听器...');
+
+      // 设置前台消息处理函数
+      onMessage(messaging, (payload) => {
+        console.log('收到前台消息:', payload);
+
+        // 确保通知数据完整
+        if (!payload.notification) {
+          console.warn('收到的消息没有notification字段');
+          // 尝试从数据字段构建通知
+          if (payload.data) {
+            payload.notification = {
+              title: payload.data.title || '新通知',
+              body: payload.data.body || '',
+            };
+          }
+        }
+
+        resolve(payload);
+      });
+
+      console.log('Firebase 消息监听器设置成功');
+    } catch (error) {
+      console.error('设置 Firebase 消息监听器失败:', error);
+      resolve(null);
+    }
   });
 };

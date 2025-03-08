@@ -14,6 +14,7 @@ import {
   addToast,
 } from '@heroui/react';
 import { Send, ArrowLeft } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { useAuthStore } from '@/stores/useAuthStore';
 import {
@@ -30,6 +31,8 @@ import { formatDistanceToNow } from '@/utils/date';
 
 export default function MessagesPage() {
   const { user, getUser } = useAuthStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<'chats' | 'users'>('chats');
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -80,6 +83,20 @@ export default function MessagesPage() {
       }
     }
   }, [selectedUser, conversations, followingUsers, activeTab]);
+
+  // 处理URL中的userId参数，用于推送通知打开特定聊天
+  useEffect(() => {
+    const directMessageUserId = searchParams.get('userId');
+
+    if (directMessageUserId && user) {
+      // 如果URL中有userId参数，直接选择该用户
+      setSelectedUser(directMessageUserId);
+      if (activeTab !== 'chats') {
+        setActiveTab('chats');
+      }
+      fetchMessages(directMessageUserId);
+    }
+  }, [user, searchParams]);
 
   // 替换WebSocket事件监听为轮询机制
   useEffect(() => {
@@ -366,17 +383,26 @@ export default function MessagesPage() {
     }
   };
 
+  // change user select method, support update url and send active status
   const handleUserSelect = (userId: string) => {
     setSelectedUser(userId);
+    setMessages([]);
+    setIsLoadingMessages(true);
 
-    // 如果是从对话列表选择的用户，找到对应的对话并标记为已读
+    // update url, but not refresh page
+    const url = new URL(window.location.href);
+
+    url.searchParams.set('userId', userId);
+    router.replace(url.pathname + url.search);
+
+    // if user is selected from conversation list, find the corresponding conversation and mark as read
     if (activeTab === 'chats') {
       const conversation = conversations.find((c) => c.otherUser.id === userId);
 
       if (conversation && conversation.unreadCount > 0) {
         markAsRead(conversation.id)
           .then(() => {
-            // 更新本地对话列表中的未读计数
+            // update unread count in local conversation list
             setConversations((prevConversations) =>
               prevConversations.map((c) =>
                 c.id === conversation.id ? { ...c, unreadCount: 0 } : c,
@@ -388,7 +414,44 @@ export default function MessagesPage() {
           });
       }
     }
+
+    // send request to mark as active status
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/messages/active-chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+      body: JSON.stringify({
+        otherUserId: userId,
+        active: true,
+      }),
+    }).catch((err) => console.error('Failed to set active chat status:', err));
+
+    fetchMessages(userId);
   };
+
+  // when component unmount or user change, mark as inactive status
+  useEffect(() => {
+    return () => {
+      // if there is selected user, send inactive status when leave page
+      if (selectedUser) {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/messages/active-chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+          body: JSON.stringify({
+            otherUserId: selectedUser,
+            active: false,
+          }),
+        }).catch((err) =>
+          console.error('Failed to clear active chat status:', err),
+        );
+      }
+    };
+  }, [selectedUser]);
 
   const handleSendMessage = async () => {
     if (!selectedUser || !newMessage.trim()) return;
@@ -402,9 +465,9 @@ export default function MessagesPage() {
 
       console.log('[MessagesPage] 发送消息响应:', response);
 
-      // 确保响应是一个有效的消息对象
+      // ensure response is a valid message object
       if (response && typeof response === 'object' && 'id' in response) {
-        // 使用类型断言确保类型安全
+        // use type assertion to ensure type safety
         const messageObj = response as unknown as Message;
 
         console.log('[MessagesPage] 添加消息到本地列表:', messageObj);

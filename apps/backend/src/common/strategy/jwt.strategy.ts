@@ -23,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found');
     }
 
-    console.log('JwtStrategy - User found:', user);
+    // console.log('JwtStrategy - User found:', user);
     return user;
   }
 }

@@ -36,7 +36,7 @@ export const deleteMessage = (messageId: string) => {
 export const getUnreadMessages = (userId: string, lastMessageId?: string) => {
   const params = lastMessageId ? { lastMessageId } : {};
 
-  return request.get<Message[]>(`${PREFIX}/unread/${userId}`, { params });
+  return request.get<Message[]>(`${PREFIX}/unread/${userId}`, params);
 };
 
 // 获取所有未读消息数量

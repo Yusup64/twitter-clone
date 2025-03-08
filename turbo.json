@@ -7,7 +7,10 @@
     "API_BASE_URL",
     "NEXT_PUBLIC_API_BASE_URL",
     "JWT_ACCESS_SECRET",
-    "JWT_REFRESH_SECRET"
+    "JWT_REFRESH_SECRET",
+    "FIREBASE_PROJECT_ID",
+    "FIREBASE_CLIENT_EMAIL",
+    "FIREBASE_PRIVATE_KEY"
   ],
   "tasks": {
     "build": {

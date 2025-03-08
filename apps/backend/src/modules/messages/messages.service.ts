@@ -5,12 +5,23 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '@/src/common/shared/prisma';
+import { NotificationsService } from '../notifications/notifications.service';
+
+// 用一个简单的内存存储来跟踪活跃的聊天会话
+// 在生产环境中，这应该使用Redis或其他分布式存储
+const activeChats = new Map<string, Set<string>>();
+
+// 用户活跃会话结构: { userId: { otherUserId1, otherUserId2, ... } }
+// 表示userId正在与otherUserId1, otherUserId2等用户聊天
 
 @Injectable()
 export class MessagesService {
   private logger = new Logger('MessagesService');
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
   /**
    * Retrieves all conversations for a given user, including the latest message and unread count.
    */
@@ -127,6 +138,28 @@ export class MessagesService {
     return messages;
   }
 
+  // 添加用户活跃聊天状态的方法
+  setUserActiveChat(userId: string, otherUserId: string) {
+    if (!activeChats.has(userId)) {
+      activeChats.set(userId, new Set());
+    }
+    activeChats.get(userId).add(otherUserId);
+    this.logger.log(`用户 ${userId} 开始与 ${otherUserId} 聊天`);
+  }
+
+  // 移除用户活跃聊天状态的方法
+  removeUserActiveChat(userId: string, otherUserId: string) {
+    if (activeChats.has(userId)) {
+      activeChats.get(userId).delete(otherUserId);
+      this.logger.log(`用户 ${userId} 结束与 ${otherUserId} 聊天`);
+    }
+  }
+
+  // 检查用户是否在与特定用户聊天
+  isUserInActiveChat(userId: string, otherUserId: string): boolean {
+    return activeChats.has(userId) && activeChats.get(userId).has(otherUserId);
+  }
+
   async sendMessage(senderId: string, receiverId: string, content: string) {
     this.logger.log(
       `发送消息: 发送者=${senderId}, 接收者=${receiverId}, 内容=${content}`,
@@ -174,6 +207,49 @@ export class MessagesService {
     });
 
     this.logger.log(`消息创建成功: ${message.id}`);
+
+    // 如果消息发送成功，发送推送通知
+    try {
+      // 获取发送者信息，用于通知标题
+      const sender = await this.prisma.user.findUnique({
+        where: { id: senderId },
+        select: { displayName: true, username: true },
+      });
+
+      const senderName = sender.displayName || sender.username;
+
+      // 检查接收者是否在与发送者的活跃聊天中
+      const isInActiveChat = this.isUserInActiveChat(receiverId, senderId);
+
+      // 如果接收者不在活跃聊天中，则发送推送通知
+      if (!isInActiveChat) {
+        this.logger.log(
+          `User ${receiverId} is not in the active chat with ${senderId}, sending push notification`,
+        );
+
+        // 发送推送通知
+        await this.notificationsService.sendPushNotification(receiverId, {
+          title: `From ${senderName}`,
+          body:
+            content.length > 60 ? content.substring(0, 60) + '...' : content,
+          data: {
+            url: `/messages?userId=${senderId}`,
+            type: 'message',
+            senderId: senderId,
+            conversationId: conversation.id,
+          },
+        });
+
+        this.logger.log(`Push notification sent to user ${receiverId}`);
+      } else {
+        this.logger.log(
+          `User ${receiverId} is in the active chat with ${senderId}, not sending push notification`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Failed to send push notification: ${error.message}`);
+      // 通知发送失败不影响消息发送功能
+    }
 
     return message;
   }
