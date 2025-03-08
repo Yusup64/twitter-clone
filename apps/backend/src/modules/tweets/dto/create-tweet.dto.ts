@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsArray, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class CreateTweetDto {
   @ApiProperty({ required: false })
@@ -36,4 +42,11 @@ export class CreateTweetDto {
   @IsString()
   @IsOptional()
   pollId?: string;
+}
+
+export class CreateCommentDto {
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  content: string;
 }

@@ -55,7 +55,6 @@ export class AuthController {
 
   @IsPublic()
   @Post('refresh')
-  @ApiCreatedResponse({ type: LoginDto })
   @ApiOperation({ summary: 'Refresh tokens' })
   @ApiBearerAuth('access-token')
   @HttpCode(HttpStatus.OK)

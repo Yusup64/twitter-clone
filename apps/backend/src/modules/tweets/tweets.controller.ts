@@ -13,7 +13,12 @@ import { TweetsService } from './tweets.service';
 import { JwtAuthGuard } from '@/src/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/src/common/guards/roles.guard';
 import { UserAuth } from '@/src/common/decorators/user.decorator';
-import { CreateTweetDto, UpdateTweetDto, CreatePollDto } from './dto';
+import {
+  CreateTweetDto,
+  UpdateTweetDto,
+  CreatePollDto,
+  CreateCommentDto,
+} from './dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { IsPublic, Roles } from '@/src/common/decorators';
 import { Role } from '@/src/common/enums/role.enum';
@@ -25,6 +30,8 @@ export class TweetsController {
   constructor(private readonly tweetsService: TweetsService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a tweet' })
+  @ApiBearerAuth('access-token')
   create(@UserAuth() user, @Body() createTweetDto: CreateTweetDto) {
     return this.tweetsService.create(user.id, createTweetDto);
   }
@@ -84,9 +91,13 @@ export class TweetsController {
   addComment(
     @UserAuth() user,
     @Param('id') tweetId: string,
-    @Body('content') content: string,
+    @Body() createCommentDto: CreateCommentDto,
   ) {
-    return this.tweetsService.addComment(user.id, tweetId, content);
+    return this.tweetsService.addComment(
+      user.id,
+      tweetId,
+      createCommentDto.content,
+    );
   }
 
   @Get('timeline')
